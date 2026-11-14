@@ -1,0 +1,171 @@
+{
+  "id": "minor_injury",
+  "title": "Injury, cut, burn or fall",
+  "triggers": [
+    "cut",
+    "wound",
+    "burn$",
+    "burns$",
+    "burned$",
+    "burnt$",
+    "scald",
+    "sprain",
+    "injur",
+    "fall",
+    "fell",
+    "fracture",
+    "bruise",
+    "twisted",
+    "chot"
+  ],
+  "fields": [
+    {
+      "key": "severe_bleeding",
+      "type": "bool",
+      "required": true,
+      "question": "Is there heavy bleeding that will not stop with firm pressure?",
+      "description": "Is there heavy bleeding that will not stop with firm pressure?"
+    },
+    {
+      "key": "head_injury_recent",
+      "type": "bool",
+      "required": true,
+      "question": "Was there a blow to the head?",
+      "description": "Was there a blow to the head?"
+    },
+    {
+      "key": "confusion",
+      "type": "bool",
+      "required": true,
+      "question": "Any confusion, drowsiness or trouble staying awake?",
+      "description": "Any confusion, drowsiness or trouble staying awake?",
+      "ask_if": "head_injury_recent"
+    },
+    {
+      "key": "vomiting",
+      "type": "bool",
+      "required": true,
+      "question": "Any vomiting?",
+      "description": "Any vomiting?",
+      "ask_if": "head_injury_recent"
+    },
+    {
+      "key": "deformity_or_cant_bear_weight",
+      "type": "bool",
+      "required": true,
+      "question": "Is there an obvious deformity, or can the person not move it or put weight on it?",
+      "description": "Is there an obvious deformity, or can the person not move it or put weight on it?"
+    },
+    {
+      "key": "deep_or_gaping_wound",
+      "type": "bool",
+      "required": true,
+      "question": "Is the wound deep, gaping, or does it show fat or muscle?",
+      "description": "Is the wound deep, gaping, or does it show fat or muscle?"
+    },
+    {
+      "key": "serious_burn",
+      "type": "bool",
+      "required": true,
+      "question": "Is it a burn that is large, blistering, or on the face, hands or genitals?",
+      "description": "Is it a burn that is large, blistering, or on the face, hands or genitals?"
+    },
+    {
+      "key": "numbness_or_colour_change",
+      "type": "bool",
+      "required": true,
+      "question": "Any numbness, tingling or colour change beyond the injury?",
+      "description": "Any numbness, tingling or colour change beyond the injury?"
+    },
+    {
+      "key": "signs_of_infection",
+      "type": "bool",
+      "required": true,
+      "question": "Any spreading redness, pus, increasing pain or fever?",
+      "description": "Any spreading redness, pus, increasing pain or fever?"
+    }
+  ],
+  "red_flags": [
+    {
+      "id": "injury_head_confusion",
+      "label": "Head injury with confusion",
+      "when": {
+        "all": [
+          "head_injury_recent",
+          "confusion"
+        ]
+      },
+      "category": "medical"
+    }
+  ],
+  "rules": [
+    {
+      "id": "injury_head",
+      "urgency": "urgent",
+      "when": "head_injury_recent",
+      "reason": "A blow to the head should be assessed the same day."
+    },
+    {
+      "id": "injury_deformity",
+      "urgency": "urgent",
+      "when": "deformity_or_cant_bear_weight",
+      "reason": "Possible broken bone or serious joint injury."
+    },
+    {
+      "id": "injury_deep",
+      "urgency": "urgent",
+      "when": "deep_or_gaping_wound",
+      "reason": "Deep wounds may need closing or cleaning the same day."
+    },
+    {
+      "id": "injury_burn",
+      "urgency": "urgent",
+      "when": "serious_burn",
+      "reason": "Large burns or burns on sensitive areas need same-day care."
+    },
+    {
+      "id": "injury_numbness",
+      "urgency": "urgent",
+      "when": "numbness_or_colour_change",
+      "reason": "Numbness or colour change may mean nerve or blood-supply injury."
+    },
+    {
+      "id": "injury_severe",
+      "urgency": "urgent",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "The person rates the injury as severe."
+    },
+    {
+      "id": "injury_infection",
+      "urgency": "moderate",
+      "when": "signs_of_infection",
+      "reason": "Signs of infection should be reviewed by a doctor."
+    },
+    {
+      "id": "injury_moderate",
+      "urgency": "moderate",
+      "when": [
+        "severity",
+        "==",
+        "moderate"
+      ],
+      "reason": "The person rates the injury as moderate."
+    }
+  ],
+  "default_urgency": "low",
+  "warning_signs": [
+    "Bleeding that does not stop",
+    "Confusion or repeated vomiting after a head injury",
+    "Spreading redness or pus",
+    "Numbness or colour change",
+    "Severe pain"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

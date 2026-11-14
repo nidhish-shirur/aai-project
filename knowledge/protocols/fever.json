@@ -1,0 +1,219 @@
+{
+  "id": "fever",
+  "title": "Fever",
+  "triggers": [
+    "fever",
+    "feverish",
+    "temperature",
+    "chills",
+    "bukhar"
+  ],
+  "fields": [
+    {
+      "key": "breathing_difficulty",
+      "type": "bool",
+      "required": true,
+      "question": "Any difficulty breathing?",
+      "description": "Any difficulty breathing?"
+    },
+    {
+      "key": "stiff_neck",
+      "type": "bool",
+      "required": true,
+      "question": "Any stiff neck, or pain when bending the neck forward?",
+      "description": "Any stiff neck, or pain when bending the neck forward?"
+    },
+    {
+      "key": "confusion",
+      "type": "bool",
+      "required": true,
+      "question": "Any new confusion, unusual drowsiness or trouble staying awake?",
+      "description": "Any new confusion, unusual drowsiness or trouble staying awake?"
+    },
+    {
+      "key": "chest_pain",
+      "type": "bool",
+      "required": true,
+      "question": "Any chest pain?",
+      "description": "Any chest pain?"
+    },
+    {
+      "key": "unable_to_drink_fluids",
+      "type": "bool",
+      "required": true,
+      "question": "Is the person unable to drink fluids?",
+      "description": "True if unable to keep or take fluids."
+    },
+    {
+      "key": "temperature_c",
+      "type": "float",
+      "required": false,
+      "question": "What is the highest temperature measured? (say if not measured)",
+      "description": "Highest measured temperature in degrees Celsius. Convert Fahrenheit to Celsius."
+    },
+    {
+      "key": "recent_travel",
+      "type": "bool",
+      "required": false,
+      "question": "Any recent travel in the last 2 weeks, especially to an area with an outbreak?",
+      "description": "Any recent travel in the last 2 weeks, especially to an area with an outbreak?"
+    },
+    {
+      "key": "rash_nonblanching",
+      "type": "bool",
+      "required": false,
+      "question": "Any new rash or purple spots that do not fade when pressed with a glass?",
+      "description": "Any new rash or purple spots that do not fade when pressed with a glass?"
+    }
+  ],
+  "red_flags": [
+    {
+      "id": "fever_neck_or_confusion",
+      "label": "Fever with stiff neck or new confusion",
+      "when": {
+        "all": [
+          "fever",
+          {
+            "any": [
+              "stiff_neck",
+              "confusion"
+            ]
+          }
+        ]
+      },
+      "category": "medical"
+    },
+    {
+      "id": "fever_young_infant",
+      "label": "Fever in a baby under 3 months",
+      "when": {
+        "all": [
+          "fever",
+          [
+            "age_years",
+            "<",
+            0.25
+          ]
+        ]
+      },
+      "category": "medical"
+    },
+    {
+      "id": "fever_nonblanching_rash",
+      "label": "Fever with a rash that does not fade when pressed",
+      "when": {
+        "all": [
+          "fever",
+          "rash_nonblanching"
+        ]
+      },
+      "category": "medical"
+    }
+  ],
+  "rules": [
+    {
+      "id": "fever_very_high",
+      "urgency": "urgent",
+      "when": [
+        "temperature_c",
+        ">=",
+        40
+      ],
+      "reason": "Temperature of 40 C or above needs same-day assessment."
+    },
+    {
+      "id": "fever_cannot_drink",
+      "urgency": "urgent",
+      "when": "unable_to_drink_fluids",
+      "reason": "Being unable to drink fluids risks dehydration."
+    },
+    {
+      "id": "fever_infant",
+      "urgency": "urgent",
+      "when": [
+        "age_years",
+        "<",
+        1
+      ],
+      "reason": "Fever in a baby under 1 year needs same-day assessment."
+    },
+    {
+      "id": "fever_high_prolonged",
+      "urgency": "urgent",
+      "when": {
+        "all": [
+          [
+            "temperature_c",
+            ">=",
+            39
+          ],
+          [
+            "duration_days",
+            ">=",
+            3
+          ]
+        ]
+      },
+      "reason": "High fever lasting several days."
+    },
+    {
+      "id": "fever_five_days",
+      "urgency": "urgent",
+      "when": [
+        "duration_days",
+        ">=",
+        5
+      ],
+      "reason": "Fever lasting five days or more."
+    },
+    {
+      "id": "fever_severe",
+      "urgency": "urgent",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "The person rates the illness as severe."
+    },
+    {
+      "id": "fever_two_days",
+      "urgency": "moderate",
+      "when": [
+        "duration_days",
+        ">=",
+        2
+      ],
+      "reason": "Fever lasting two days or more should be reviewed by a doctor."
+    },
+    {
+      "id": "fever_travel",
+      "urgency": "moderate",
+      "when": "recent_travel",
+      "reason": "Fever after recent travel should be reviewed by a doctor."
+    },
+    {
+      "id": "fever_moderate",
+      "urgency": "moderate",
+      "when": [
+        "severity",
+        "==",
+        "moderate"
+      ],
+      "reason": "The person rates the illness as moderate."
+    }
+  ],
+  "default_urgency": "low",
+  "warning_signs": [
+    "Difficulty breathing",
+    "Chest pain",
+    "Stiff neck or new confusion",
+    "Unable to drink fluids",
+    "Rash that does not fade when pressed",
+    "Fever lasting more than 2 days"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

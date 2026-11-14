@@ -1,0 +1,568 @@
+[
+ {
+  "id": "E01",
+  "gold": "emergency",
+  "complaint": "chest_pain",
+  "messages": [
+   "I have crushing chest pain that goes down my left arm and I am sweating."
+  ],
+  "facts": {
+   "age_years": 58,
+   "sex": "male",
+   "chronic_conditions": [
+    "hypertension"
+   ],
+   "duration_days": 0.05,
+   "severity": "severe",
+   "pain_radiates_arm_jaw": true,
+   "sweating": true,
+   "pain_crushing_pressure": true,
+   "pain_over_15_min": true
+  },
+  "rationale": "Classic warning pattern: chest pain with arm spread, sweating, pressure."
+ },
+ {
+  "id": "E02",
+  "gold": "emergency",
+  "complaint": "chest_pain",
+  "messages": [
+   "I have chest pain and I can't catch my breath."
+  ],
+  "facts": {
+   "age_years": 45,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 0.1,
+   "severity": "severe",
+   "breathing_difficulty": true
+  },
+  "rationale": "Chest pain with difficulty breathing."
+ },
+ {
+  "id": "E03",
+  "gold": "emergency",
+  "complaint": "headache",
+  "messages": [
+   "This is the worst headache of my life, it came on all of a sudden."
+  ],
+  "facts": {
+   "age_years": 34,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 0.05,
+   "severity": "severe",
+   "thunderclap": true
+  },
+  "rationale": "Sudden worst-ever headache."
+ },
+ {
+  "id": "E04",
+  "gold": "emergency",
+  "complaint": "dizziness_weakness",
+  "messages": [
+   "My father feels dizzy and his face is drooping on one side."
+  ],
+  "facts": {
+   "age_years": 70,
+   "sex": "male",
+   "duration_days": 0.05,
+   "severity": "severe",
+   "neuro_deficit": true,
+   "face_droop": true
+  },
+  "rationale": "Face droop is a stroke warning sign."
+ },
+ {
+  "id": "E05",
+  "gold": "emergency",
+  "complaint": "fever",
+  "messages": [
+   "My six-week-old baby has a fever."
+  ],
+  "facts": {
+   "age_years": 0.12,
+   "sex": "female",
+   "duration_days": 0.5,
+   "severity": "moderate"
+  },
+  "rationale": "Fever in a baby under 3 months."
+ },
+ {
+  "id": "E06",
+  "gold": "emergency",
+  "complaint": "abdominal_pain",
+  "messages": [
+   "I am pregnant and have lower tummy pain with some vaginal bleeding."
+  ],
+  "facts": {
+   "age_years": 28,
+   "sex": "female",
+   "pregnant": true,
+   "duration_days": 0.5,
+   "severity": "severe",
+   "pain_location": "lower_left",
+   "vaginal_bleeding": true
+  },
+  "rationale": "Abdominal pain with bleeding in pregnancy."
+ },
+ {
+  "id": "E07",
+  "gold": "emergency",
+  "complaint": "minor_injury",
+  "messages": [
+   "I cut my arm badly and the bleeding won't stop."
+  ],
+  "facts": {
+   "age_years": 25,
+   "sex": "male",
+   "duration_days": 0.05,
+   "severity": "severe",
+   "severe_bleeding": true
+  },
+  "rationale": "Uncontrolled bleeding."
+ },
+ {
+  "id": "E08",
+  "gold": "emergency",
+  "complaint": "other",
+  "messages": [
+   "I don't want to live anymore, I keep thinking of killing myself."
+  ],
+  "facts": {
+   "age_years": 22,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 7,
+   "severity": "severe",
+   "suicidal_thoughts": true
+  },
+  "rationale": "Suicidal thoughts need immediate human support."
+ },
+ {
+  "id": "E09",
+  "gold": "emergency",
+  "complaint": "fever",
+  "messages": [
+   "He has a high fever, a stiff neck and seems confused."
+  ],
+  "facts": {
+   "age_years": 40,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "severe",
+   "stiff_neck": true,
+   "confusion": true,
+   "temperature_c": 39.8
+  },
+  "rationale": "Fever with stiff neck and confusion."
+ },
+ {
+  "id": "U01",
+  "gold": "urgent",
+  "complaint": "chest_pain",
+  "messages": [
+   "Sharp stabbing chest pain for twenty minutes after a coughing fit."
+  ],
+  "facts": {
+   "age_years": 30,
+   "sex": "male",
+   "duration_days": 0.02,
+   "severity": "moderate",
+   "pain_over_15_min": true,
+   "pain_worse_breathing": true
+  },
+  "rationale": "Any chest pain needs same-day assessment; under 35 with no emergency features."
+ },
+ {
+  "id": "U02",
+  "gold": "urgent",
+  "complaint": "fever",
+  "messages": [
+   "My 3 year old has had a high fever for 3 days."
+  ],
+  "facts": {
+   "age_years": 3,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "moderate",
+   "temperature_c": 39.5
+  },
+  "rationale": "High fever for several days in a young child."
+ },
+ {
+  "id": "U03",
+  "gold": "urgent",
+  "complaint": "abdominal_pain",
+  "messages": [
+   "The pain moved to my lower right side and I vomited, I feel feverish."
+  ],
+  "facts": {
+   "age_years": 19,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "moderate",
+   "pain_location": "lower_right",
+   "vomiting": true,
+   "fever": true
+  },
+  "rationale": "Lower right pain with fever and vomiting."
+ },
+ {
+  "id": "U04",
+  "gold": "urgent",
+  "complaint": "gi_upset",
+  "messages": [
+   "My son is vomiting and has loose motions and cannot keep water down."
+  ],
+  "facts": {
+   "age_years": 2,
+   "sex": "male",
+   "duration_days": 1.5,
+   "severity": "moderate",
+   "unable_to_keep_fluids": true,
+   "vomiting": true
+  },
+  "rationale": "Cannot keep fluids down in a toddler."
+ },
+ {
+  "id": "U05",
+  "gold": "urgent",
+  "complaint": "minor_injury",
+  "messages": [
+   "I fell and my wrist looks bent, I can't move it."
+  ],
+  "facts": {
+   "age_years": 40,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 0.1,
+   "severity": "moderate",
+   "deformity_or_cant_bear_weight": true
+  },
+  "rationale": "Possible fracture."
+ },
+ {
+  "id": "U06",
+  "gold": "urgent",
+  "complaint": "urinary",
+  "messages": [
+   "Burning when I pee, a fever, and pain in my side."
+  ],
+  "facts": {
+   "age_years": 35,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 2,
+   "severity": "moderate",
+   "fever": true,
+   "flank_pain": true
+  },
+  "rationale": "Urinary symptoms with fever and flank pain."
+ },
+ {
+  "id": "U07",
+  "gold": "urgent",
+  "complaint": "headache",
+  "messages": [
+   "I hit my head yesterday, now I have a headache and vomited once."
+  ],
+  "facts": {
+   "age_years": 45,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "moderate",
+   "head_injury_recent": true,
+   "vomiting": true
+  },
+  "rationale": "Headache after head injury."
+ },
+ {
+  "id": "U08",
+  "gold": "urgent",
+  "complaint": "fever",
+  "messages": [
+   "I have had fever for five days now."
+  ],
+  "facts": {
+   "age_years": 30,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 5,
+   "severity": "moderate",
+   "temperature_c": 38.6
+  },
+  "rationale": "Fever lasting 5 days."
+ },
+ {
+  "id": "U09",
+  "gold": "urgent",
+  "complaint": "dizziness_weakness",
+  "messages": [
+   "I feel dizzy and my heart is racing."
+  ],
+  "facts": {
+   "age_years": 55,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 1,
+   "severity": "moderate",
+   "palpitations": true
+  },
+  "rationale": "Dizziness with abnormal heartbeat."
+ },
+ {
+  "id": "M01",
+  "gold": "moderate",
+  "complaint": "fever",
+  "messages": [
+   "I have had a fever for three days."
+  ],
+  "facts": {
+   "age_years": 42,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "moderate",
+   "temperature_c": 38.2,
+   "cough": true
+  },
+  "rationale": "Manual's example: fever 3 days, no warning signs -> doctor visit."
+ },
+ {
+  "id": "M02",
+  "gold": "moderate",
+  "complaint": "cough_breathing",
+  "messages": [
+   "I have had a cough for ten days."
+  ],
+  "facts": {
+   "age_years": 29,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 10,
+   "severity": "mild"
+  },
+  "rationale": "Cough lasting over a week."
+ },
+ {
+  "id": "M03",
+  "gold": "moderate",
+  "complaint": "abdominal_pain",
+  "messages": [
+   "I have had stomach pain for two days, around the belly button."
+  ],
+  "facts": {
+   "age_years": 33,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 2,
+   "severity": "moderate",
+   "pain_location": "central"
+  },
+  "rationale": "Moderate abdominal pain for 2 days, no warning signs."
+ },
+ {
+  "id": "M04",
+  "gold": "moderate",
+  "complaint": "headache",
+  "messages": [
+   "I have had a new headache for four days."
+  ],
+  "facts": {
+   "age_years": 52,
+   "sex": "male",
+   "duration_days": 4,
+   "severity": "moderate"
+  },
+  "rationale": "New headache at 50+ lasting days."
+ },
+ {
+  "id": "M05",
+  "gold": "moderate",
+  "complaint": "urinary",
+  "messages": [
+   "It burns when I urinate since yesterday."
+  ],
+  "facts": {
+   "age_years": 26,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 1,
+   "severity": "mild"
+  },
+  "rationale": "Urinary symptoms: see doctor or teleconsult."
+ },
+ {
+  "id": "M06",
+  "gold": "moderate",
+  "complaint": "sore_throat_ear",
+  "messages": [
+   "Sore throat and fever for three days."
+  ],
+  "facts": {
+   "age_years": 20,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "moderate",
+   "fever": true
+  },
+  "rationale": "Fever with sore throat for 3 days."
+ },
+ {
+  "id": "M07",
+  "gold": "moderate",
+  "complaint": "gi_upset",
+  "messages": [
+   "Diarrhoea for three days but I can drink fine."
+  ],
+  "facts": {
+   "age_years": 30,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "moderate"
+  },
+  "rationale": "Diarrhoea lasting 3 days."
+ },
+ {
+  "id": "M08",
+  "gold": "moderate",
+  "complaint": "fever",
+  "messages": [
+   "My grandfather has had a mild fever since yesterday."
+  ],
+  "facts": {
+   "age_years": 72,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "mild",
+   "temperature_c": 38.0
+  },
+  "rationale": "Mild fever alone is low, but age 65+ raises it one level."
+ },
+ {
+  "id": "L01",
+  "gold": "low",
+  "complaint": "fever",
+  "messages": [
+   "I have had a slight fever since yesterday."
+  ],
+  "facts": {
+   "age_years": 24,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 1,
+   "severity": "mild",
+   "temperature_c": 37.9
+  },
+  "rationale": "Short, mild fever without warning signs."
+ },
+ {
+  "id": "L02",
+  "gold": "low",
+  "complaint": "cough_breathing",
+  "messages": [
+   "I have had a mild cough for three days."
+  ],
+  "facts": {
+   "age_years": 30,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "mild"
+  },
+  "rationale": "Short, mild cough."
+ },
+ {
+  "id": "L03",
+  "gold": "low",
+  "complaint": "headache",
+  "messages": [
+   "I have a mild headache since this morning."
+  ],
+  "facts": {
+   "age_years": 28,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 0.5,
+   "severity": "mild"
+  },
+  "rationale": "Mild headache, no warning signs."
+ },
+ {
+  "id": "L04",
+  "gold": "low",
+  "complaint": "sore_throat_ear",
+  "messages": [
+   "My throat is a little sore since yesterday."
+  ],
+  "facts": {
+   "age_years": 18,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "mild"
+  },
+  "rationale": "Mild, short sore throat."
+ },
+ {
+  "id": "L05",
+  "gold": "low",
+  "complaint": "gi_upset",
+  "messages": [
+   "I vomited once and had loose stool, but I am drinking fine."
+  ],
+  "facts": {
+   "age_years": 25,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 1,
+   "severity": "mild",
+   "vomiting": true
+  },
+  "rationale": "Mild, short, hydrating well."
+ },
+ {
+  "id": "L06",
+  "gold": "low",
+  "complaint": "minor_injury",
+  "messages": [
+   "I scraped my knee on the road."
+  ],
+  "facts": {
+   "age_years": 14,
+   "sex": "male",
+   "duration_days": 0.2,
+   "severity": "mild"
+  },
+  "rationale": "Minor graze."
+ },
+ {
+  "id": "L07",
+  "gold": "low",
+  "complaint": "dizziness_weakness",
+  "messages": [
+   "I feel a bit light-headed when I stand up fast."
+  ],
+  "facts": {
+   "age_years": 27,
+   "sex": "female",
+   "pregnant": false,
+   "duration_days": 1,
+   "severity": "mild"
+  },
+  "rationale": "Mild, short, no warning signs."
+ },
+ {
+  "id": "L08",
+  "gold": "low",
+  "complaint": "abdominal_pain",
+  "messages": [
+   "Mild bloating and discomfort in my belly since yesterday."
+  ],
+  "facts": {
+   "age_years": 23,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "mild",
+   "pain_location": "central"
+  },
+  "rationale": "Mild, short, no warning signs."
+ }
+]

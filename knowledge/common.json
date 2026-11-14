@@ -1,0 +1,37 @@
+{
+  "fields": [
+    {
+      "key": "age_years", "type": "float", "required": true,
+      "question": "How old is the person with the symptoms?",
+      "description": "Age in years. Use decimals for babies (0.5 = 6 months, 0.1 = about 5 weeks)."
+    },
+    {
+      "key": "sex", "type": "enum", "options": ["male", "female", "other"], "required": true,
+      "question": "Is the person male, female or other?",
+      "description": "Sex assigned at birth, used only for pregnancy-related safety questions."
+    },
+    {
+      "key": "pregnant", "type": "bool", "required": true,
+      "ask_if": {"all": [["sex", "==", "female"], ["age_years", ">=", 12], ["age_years", "<=", 50]]},
+      "question": "Is there any chance of pregnancy?",
+      "description": "True if pregnant or possibly pregnant."
+    },
+    {
+      "key": "chronic_conditions", "type": "list", "required": true,
+      "options": ["diabetes", "heart_disease", "lung_disease", "kidney_disease", "liver_disease",
+                  "cancer", "immunocompromised", "hypertension", "other"],
+      "question": "Any long-term conditions, such as diabetes, heart, lung, kidney or liver disease, cancer, or a weak immune system? (Say 'none' if not.)",
+      "description": "List of canonical condition names. Empty list means the patient said none."
+    },
+    {
+      "key": "duration_days", "type": "float", "required": true,
+      "question": "How long have the symptoms been going on?",
+      "description": "Duration in days (0.5 = 12 hours, 7 = one week)."
+    },
+    {
+      "key": "severity", "type": "enum", "options": ["mild", "moderate", "severe"], "required": true,
+      "question": "Overall, would you say it is mild, moderate or severe?",
+      "description": "Patient's own rating of how bad the problem is."
+    }
+  ]
+}

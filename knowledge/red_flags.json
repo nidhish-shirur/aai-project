@@ -1,0 +1,314 @@
+{
+  "_comment": "Global emergency red flags. Each flag fires from regex 'patterns' on the patient's own words, 'patterns_all' (every regex in a group must match), and/or a 'when' condition on extracted facts. Negations such as 'no chest pain' are handled in code. REVIEW EVERY ENTRY WITH A CLINICIAN BEFORE REAL USE.",
+  "extra_facts": [
+    {
+      "key": "breathing_difficulty",
+      "type": "bool",
+      "question": "Any difficulty breathing?",
+      "description": "True if the person has trouble breathing or cannot get enough air."
+    },
+    {
+      "key": "chest_pain",
+      "type": "bool",
+      "question": "Any chest pain?",
+      "description": "True if chest pain, pressure or tightness is present."
+    },
+    {
+      "key": "sweating",
+      "type": "bool",
+      "question": "Are you sweating heavily, or feeling sick or light-headed with it?",
+      "description": "True if cold sweat or heavy unexplained sweating."
+    },
+    {
+      "key": "pain_radiates_arm_jaw",
+      "type": "bool",
+      "question": "Does the pain spread to your arm, shoulder, jaw or back?",
+      "description": "True if chest pain spreads to arm, shoulder, jaw or back."
+    },
+    {
+      "key": "pain_crushing_pressure",
+      "type": "bool",
+      "question": "Does it feel like heavy pressure or tightness?",
+      "description": "True if described as crushing, squeezing or heavy."
+    },
+    {
+      "key": "fever",
+      "type": "bool",
+      "question": "Any fever?",
+      "description": "True if the person has or had a fever."
+    },
+    {
+      "key": "vomiting",
+      "type": "bool",
+      "question": "Any vomiting?",
+      "description": "True if vomiting."
+    },
+    {
+      "key": "confusion",
+      "type": "bool",
+      "question": "Any new confusion, unusual drowsiness or trouble staying awake?",
+      "description": "True if new confusion or drowsiness."
+    },
+    {
+      "key": "loss_of_consciousness",
+      "type": "bool",
+      "question": "Has the person fainted or blacked out?",
+      "description": "True if fainted, collapsed or was unresponsive."
+    },
+    {
+      "key": "neuro_deficit",
+      "type": "bool",
+      "question": "Any sudden weakness or numbness on one side, face drooping, trouble speaking, or sudden vision loss?",
+      "description": "True for any stroke-type sign."
+    },
+    {
+      "key": "face_droop",
+      "type": "bool",
+      "question": "Is one side of the face drooping?",
+      "description": "True if facial droop."
+    },
+    {
+      "key": "arm_weakness",
+      "type": "bool",
+      "question": "Is there sudden weakness or numbness in an arm or leg, especially on one side?",
+      "description": "True if sudden limb weakness or numbness."
+    },
+    {
+      "key": "speech_difficulty",
+      "type": "bool",
+      "question": "Is speech slurred or confused?",
+      "description": "True if slurred or difficult speech."
+    },
+    {
+      "key": "sudden_vision_loss",
+      "type": "bool",
+      "question": "Any sudden loss of vision?",
+      "description": "True if sudden vision loss."
+    },
+    {
+      "key": "severe_bleeding",
+      "type": "bool",
+      "question": "Is there heavy bleeding that will not stop?",
+      "description": "True if severe or uncontrolled bleeding."
+    },
+    {
+      "key": "vomiting_blood",
+      "type": "bool",
+      "question": "Are you vomiting blood or passing black tarry stools?",
+      "description": "True if blood in vomit or black tarry stool."
+    },
+    {
+      "key": "coughing_blood",
+      "type": "bool",
+      "question": "Are you coughing up blood?",
+      "description": "True if coughing up blood."
+    },
+    {
+      "key": "seizure",
+      "type": "bool",
+      "question": "Has there been a seizure or fit?",
+      "description": "True if seizure or convulsion."
+    },
+    {
+      "key": "swelling_throat_tongue",
+      "type": "bool",
+      "question": "Any swelling of the tongue or throat, or a feeling the throat is closing?",
+      "description": "True if tongue or throat swelling."
+    },
+    {
+      "key": "suicidal_thoughts",
+      "type": "bool",
+      "question": "Are you having thoughts of harming yourself or ending your life?",
+      "description": "True if the person expresses thoughts of suicide or self-harm."
+    },
+    {
+      "key": "poisoning_or_overdose",
+      "type": "bool",
+      "question": "Has anything poisonous or too many tablets been swallowed?",
+      "description": "True if poisoning or overdose."
+    },
+    {
+      "key": "rash_nonblanching",
+      "type": "bool",
+      "question": "Any new rash or purple spots that do not fade when pressed with a glass?",
+      "description": "True if non-blanching rash."
+    }
+  ],
+  "flags": [
+    {
+      "id": "loss_of_consciousness",
+      "label": "Loss of consciousness or unresponsiveness",
+      "category": "medical",
+      "patterns": [
+        "\\b(lost consciousness|loss of consciousness|unconscious|unresponsive|not responding|passed out|collapsed|blacked out|faint(ed|ing)|behosh)\\b"
+      ],
+      "when": "loss_of_consciousness"
+    },
+    {
+      "id": "breathing_emergency",
+      "label": "Difficulty breathing",
+      "category": "medical",
+      "patterns": [
+        "(can'?t|cannot|can not|unable to|struggling to|hard to|difficult to) breathe",
+        "\\b(difficulty|trouble|problems?|struggling)( in| with)? breathing\\b",
+        "\\bbreathing (difficulty|problem|trouble)",
+        "\\bgasping\\b",
+        "(blue|bluish) (lips|face|fingers)|lips (are |turning |turned |look )?(blue|bluish)|turning blue",
+        "\\b(severe|sudden|extreme) (shortness of breath|breathlessness)",
+        "(shortness of breath|breathless(ness)?) (at rest|while resting|even (when|while) (sitting|resting|lying))",
+        "(cannot|can'?t|unable to) (speak|talk) (in )?(full )?sentences",
+        "saans (nahi|nahin)",
+        "saans lene mein (takleef|dikkat)"
+      ],
+      "when": "breathing_difficulty"
+    },
+    {
+      "id": "chest_pain_combination",
+      "label": "Chest pain with breathlessness, sweating, arm/jaw spread or crushing pressure",
+      "category": "medical",
+      "patterns_all": [
+        [
+          "chest (pain|tightness|pressure|discomfort|heaviness)|pain in (my |the )?chest|seene mein dard",
+          "sweat(ing|y)?|cold sweat|short(ness)? of breath|breathless|left arm|arm (pain|numb)|jaw pain|crushing|squeez(ing|e)|(spread(s|ing)?|radiat(es|ing)|goes|going|move(s)?) (to|into|down) (my |the )?(left |right )?(arm|jaw|shoulder|back|neck)"
+        ]
+      ],
+      "when": {
+        "all": [
+          "chest_pain",
+          {
+            "any": [
+              "breathing_difficulty",
+              "sweating",
+              "pain_radiates_arm_jaw",
+              "pain_crushing_pressure"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "heart_attack_statement",
+      "label": "Possible heart attack described",
+      "category": "medical",
+      "patterns": [
+        "(having|think i'?m having|feels? like|might be having|could be having) a heart attack"
+      ]
+    },
+    {
+      "id": "stroke_signs",
+      "label": "Possible stroke warning signs (face, arm, speech)",
+      "category": "medical",
+      "patterns": [
+        "face (is |was )?(droop|drooping|drooped|sagging)",
+        "facial droop",
+        "slurred speech|slurring|speech is slurred|(can'?t|cannot) speak|trouble speaking|difficulty speaking|words (are )?(mixed|jumbled)",
+        "sudden (weakness|numbness)",
+        "(weakness|numbness) (in|on) (one|my left|my right|the left|the right) (side|arm|leg|face)",
+        "one side of (my |the )?(body|face)",
+        "sudden (loss of vision|vision loss|blindness|confusion)",
+        "lakwa|munh tedha"
+      ],
+      "when": {
+        "any": [
+          "neuro_deficit",
+          "face_droop",
+          "arm_weakness",
+          "speech_difficulty",
+          "sudden_vision_loss"
+        ]
+      }
+    },
+    {
+      "id": "thunderclap_headache",
+      "label": "Sudden, worst-ever headache",
+      "category": "medical",
+      "patterns": [
+        "worst headache of my life|worst headache (i have|i've) ever|thunderclap"
+      ]
+    },
+    {
+      "id": "severe_bleeding",
+      "label": "Severe or uncontrolled bleeding",
+      "category": "medical",
+      "patterns": [
+        "(severe|heavy|massive|profuse|uncontrolled) bleeding",
+        "bleeding (heavily|a lot|won'?t stop|will not stop|is not stopping|profusely)",
+        "blood (is )?(gushing|spurting)",
+        "soaking (through )?(a |one )?pad (every|each) hour"
+      ],
+      "when": "severe_bleeding"
+    },
+    {
+      "id": "vomiting_blood",
+      "label": "Vomiting blood or black tarry stools",
+      "category": "medical",
+      "patterns": [
+        "vomit(ing|ed)? blood|blood in (my |the )?vomit|tarry stool|black tarry"
+      ],
+      "when": "vomiting_blood"
+    },
+    {
+      "id": "coughing_blood",
+      "label": "Coughing up blood",
+      "category": "medical",
+      "patterns": [
+        "cough(ing|ed)? (up )?blood"
+      ],
+      "when": "coughing_blood"
+    },
+    {
+      "id": "anaphylaxis_signs",
+      "label": "Swelling of tongue or throat (possible severe allergic reaction)",
+      "category": "medical",
+      "patterns": [
+        "(throat|tongue) (is |are )?(closing|swelling|swollen|tight)|swollen tongue"
+      ],
+      "when": "swelling_throat_tongue"
+    },
+    {
+      "id": "seizure",
+      "label": "Seizure or convulsion",
+      "category": "medical",
+      "patterns": [
+        "\\bseizures?\\b|convuls(ion|ing|ions)|having a fit|\\bfitting\\b|epileptic fit|\\bdaura\\b"
+      ],
+      "when": "seizure"
+    },
+    {
+      "id": "poisoning_overdose",
+      "label": "Possible poisoning or overdose",
+      "category": "medical",
+      "patterns": [
+        "overdose|(?<!food )poison(ed|ing)?\\b|swallowed (a lot|many|bleach|phenyl|acid|kerosene|pesticide)|took too many (pills|tablets)|drank (bleach|phenyl|acid|kerosene|pesticide)"
+      ],
+      "when": "poisoning_or_overdose"
+    },
+    {
+      "id": "snake_bite_drowning_shock",
+      "label": "Snake bite, drowning or electric shock",
+      "category": "medical",
+      "patterns": [
+        "snake ?bite|bitten by (a )?snake|\\bdrown(ing|ed)\\b|electric shock|electrocuted"
+      ]
+    },
+    {
+      "id": "nonblanching_rash",
+      "label": "Rash or purple spots that do not fade when pressed",
+      "category": "medical",
+      "patterns": [
+        "non[- ]?blanching|rash that (does not|doesn'?t|won'?t) (fade|go away)|purple (spots|rash)"
+      ],
+      "when": "rash_nonblanching"
+    },
+    {
+      "id": "mental_health_crisis",
+      "label": "Thoughts of suicide or self-harm",
+      "category": "mental_health",
+      "patterns": [
+        "want(ed)? to die|wish i was dead|kill(ing)? myself|suicid(e|al)|end (my|it all)( life)?|take my own life|hurt(ing)? myself|self[- ]harm|jeena nahi",
+        "(do not|don't|dont|no longer|not) want(s)? to (live|be alive|go on living|wake up)\\b(?! (in|at|with|near|here|there|alone|together|a |an |the )) ?|no (reason|point) (to|in) (live|living|go on|going on|being alive)|(better|rather) off dead|(not|isn't|is not) worth living|life (is|isn't|is not) worth|(can't|cannot|can not) go on (living|like this)|want(ed)? (it|everything)( all)? to (end|stop)\\b|end it\\b|kill me\\b|i('d| would) rather be dead|don't want to be here anymore"
+      ],
+      "when": "suicidal_thoughts"
+    }
+  ]
+}

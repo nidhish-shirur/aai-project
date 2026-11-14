@@ -1,0 +1,9 @@
+groq>=0.11.0
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+pandas>=2.0.0
+pytest>=7.4.0
+# Added in later phases:
+streamlit>=1.63.0
+# google-generativeai   (only if you want the Gemini fallback)
+# fpdf2                 (optional PDF export)

@@ -1,0 +1,38 @@
+{
+  "disclaimer": "TriageGuide is an educational decision-support prototype. It does not diagnose any condition and does not replace a doctor. If you are worried or things get worse, seek medical help.",
+  "levels": {
+    "emergency": {
+      "label": "Emergency",
+      "pathway": "Emergency services / nearest emergency department - now",
+      "timeframe": "Immediately",
+      "advice": "Your symptoms need urgent medical evaluation. Call {emergency_number} (or your local emergency number) now. Do not drive yourself. If someone is with you, ask them to stay with you."
+    },
+    "urgent": {
+      "label": "Urgent",
+      "pathway": "Emergency department or urgent care centre - today",
+      "timeframe": "Within the next few hours",
+      "advice": "Your symptoms warrant medical evaluation today. Please go to an emergency department or urgent care centre. If you get worse on the way, or any warning sign appears, call {emergency_number}."
+    },
+    "moderate": {
+      "label": "Moderate",
+      "pathway": "Primary care doctor or teleconsultation",
+      "timeframe": "Within 24 to 72 hours",
+      "advice": "Your symptoms warrant a medical evaluation, but not an emergency visit right now. Please book a doctor appointment or a teleconsultation in the next 1 to 3 days. Go to urgent care sooner if any warning sign appears."
+    },
+    "low": {
+      "label": "Low",
+      "pathway": "Self-care and monitoring",
+      "timeframe": "Monitor at home",
+      "advice": "Based on what you told me, this does not look urgent right now. Rest, drink fluids and keep an eye on how you feel. See a doctor if it lasts longer than expected, gets worse, or any warning sign appears. I cannot recommend medicines or doses; a pharmacist or doctor can advise you."
+    }
+  },
+  "emergency_messages": {
+    "medical": "EMERGENCY WARNING SIGN DETECTED. Please call {emergency_number} (or your local emergency number) or go to the nearest emergency department right now. Do not wait and do not drive yourself. If someone is nearby, ask them to stay with you.",
+    "mental_health": "I am really sorry you are in so much pain, and I am glad you told me. You deserve support right now. If you might act on these thoughts or are in immediate danger, call {emergency_number} now or go to the nearest emergency department. In India you can also call the Tele-MANAS helpline on 14416 (free, 24 hours). If someone is nearby, please tell them how you feel and ask them to stay with you."
+  },
+  "clinician_review_note": "Human clinician review is recommended before relying on this assessment.",
+  "refusals": {
+    "diagnosis": "I can't tell you what condition this might be, because I don't diagnose. What I can do is ask a few questions and tell you how urgently you should get care.",
+    "treatment": "I can't recommend medicines, doses or treatments. A doctor or pharmacist can advise you on those. What I can do is work out how soon you should be seen."
+  }
+}

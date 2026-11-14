@@ -1,0 +1,15 @@
+{
+  "_comment": "Risk modifiers. If ANY applies, the urgency is raised by ONE level (never stacked), up to max_level. They never push a case to 'emergency'; only red flags do that.",
+  "max_level": "urgent",
+  "young_age_below": 5,
+  "old_age_from": 65,
+  "high_risk_conditions": ["diabetes", "heart_disease", "lung_disease", "kidney_disease",
+                           "liver_disease", "cancer", "immunocompromised"],
+  "pregnancy_applies": true,
+  "reasons": {
+    "young_age": "Young children can become unwell faster, so the level was raised.",
+    "old_age": "Age 65 or over carries higher risk, so the level was raised.",
+    "chronic": "A long-term condition raises risk, so the level was raised.",
+    "pregnancy": "Possible pregnancy needs a more cautious approach, so the level was raised."
+  }
+}

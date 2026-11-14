@@ -1,0 +1,110 @@
+{
+  "id": "dizziness_weakness",
+  "title": "Dizziness or weakness",
+  "triggers": [
+    "dizz",
+    "giddy",
+    "lightheaded",
+    "light-headed",
+    "vertigo",
+    "weakness",
+    "weak",
+    "faint",
+    "chakkar",
+    "kamzori"
+  ],
+  "fields": [
+    {
+      "key": "neuro_deficit",
+      "type": "bool",
+      "required": true,
+      "question": "Any sudden weakness or numbness on one side, face drooping, trouble speaking, or sudden vision loss?",
+      "description": "Any sudden weakness or numbness on one side, face drooping, trouble speaking, or sudden vision loss?"
+    },
+    {
+      "key": "loss_of_consciousness",
+      "type": "bool",
+      "required": true,
+      "question": "Has the person fainted or blacked out?",
+      "description": "Has the person fainted or blacked out?"
+    },
+    {
+      "key": "chest_pain",
+      "type": "bool",
+      "required": true,
+      "question": "Any chest pain?",
+      "description": "Any chest pain?"
+    },
+    {
+      "key": "breathing_difficulty",
+      "type": "bool",
+      "required": true,
+      "question": "Any difficulty breathing?",
+      "description": "Any difficulty breathing?"
+    },
+    {
+      "key": "palpitations",
+      "type": "bool",
+      "required": true,
+      "question": "Any racing, pounding or irregular heartbeat?",
+      "description": "Any racing, pounding or irregular heartbeat?"
+    }
+  ],
+  "red_flags": [],
+  "rules": [
+    {
+      "id": "dizzy_palpitations",
+      "urgency": "urgent",
+      "when": "palpitations",
+      "reason": "Dizziness with an abnormal heartbeat needs same-day assessment."
+    },
+    {
+      "id": "dizzy_chest_pain",
+      "urgency": "urgent",
+      "when": "chest_pain",
+      "reason": "Chest pain with dizziness needs same-day assessment."
+    },
+    {
+      "id": "dizzy_severe",
+      "urgency": "urgent",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "The person rates the problem as severe."
+    },
+    {
+      "id": "dizzy_two_days",
+      "urgency": "moderate",
+      "when": [
+        "duration_days",
+        ">=",
+        2
+      ],
+      "reason": "Dizziness or weakness lasting two days or more."
+    },
+    {
+      "id": "dizzy_moderate",
+      "urgency": "moderate",
+      "when": [
+        "severity",
+        "==",
+        "moderate"
+      ],
+      "reason": "The person rates the problem as moderate."
+    }
+  ],
+  "default_urgency": "low",
+  "warning_signs": [
+    "Fainting",
+    "Chest pain",
+    "Sudden weakness, numbness or trouble speaking",
+    "Racing heartbeat",
+    "Difficulty breathing"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

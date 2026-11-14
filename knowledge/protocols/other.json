@@ -1,0 +1,100 @@
+{
+  "id": "other",
+  "title": "Other symptom (generic)",
+  "triggers": [],
+  "fields": [
+    {
+      "key": "breathing_difficulty",
+      "type": "bool",
+      "required": true,
+      "question": "Any difficulty breathing?",
+      "description": "Any difficulty breathing?"
+    },
+    {
+      "key": "chest_pain",
+      "type": "bool",
+      "required": true,
+      "question": "Any chest pain?",
+      "description": "Any chest pain?"
+    },
+    {
+      "key": "loss_of_consciousness",
+      "type": "bool",
+      "required": true,
+      "question": "Has the person fainted or blacked out?",
+      "description": "Has the person fainted or blacked out?"
+    },
+    {
+      "key": "severe_bleeding",
+      "type": "bool",
+      "required": true,
+      "question": "Any heavy bleeding that will not stop?",
+      "description": "Any heavy bleeding that will not stop?"
+    },
+    {
+      "key": "neuro_deficit",
+      "type": "bool",
+      "required": true,
+      "question": "Any sudden weakness or numbness on one side, face drooping, trouble speaking, or sudden vision loss?",
+      "description": "Any sudden weakness or numbness on one side, face drooping, trouble speaking, or sudden vision loss?"
+    },
+    {
+      "key": "fever",
+      "type": "bool",
+      "required": false,
+      "question": "Any fever?",
+      "description": "Any fever?"
+    }
+  ],
+  "red_flags": [],
+  "rules": [
+    {
+      "id": "other_severe",
+      "urgency": "urgent",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "The person rates the problem as severe."
+    },
+    {
+      "id": "other_chest_pain",
+      "urgency": "urgent",
+      "when": "chest_pain",
+      "reason": "Chest pain needs same-day assessment."
+    },
+    {
+      "id": "other_moderate",
+      "urgency": "moderate",
+      "when": [
+        "severity",
+        "==",
+        "moderate"
+      ],
+      "reason": "The person rates the problem as moderate."
+    },
+    {
+      "id": "other_week",
+      "urgency": "moderate",
+      "when": [
+        "duration_days",
+        ">=",
+        7
+      ],
+      "reason": "Symptoms lasting a week or more."
+    }
+  ],
+  "default_urgency": "moderate",
+  "warning_signs": [
+    "Difficulty breathing",
+    "Chest pain",
+    "Fainting",
+    "Heavy bleeding",
+    "Symptoms getting worse"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

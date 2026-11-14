@@ -1,0 +1,6 @@
+File: dataset.csv
+Rows: 4920
+Disease labels: 41
+Exact duplicate rows: 4616
+Distinct symptom sets: 304
+Reading: many duplicates / few distinct sets mean the data is templated, so it must NOT be used to claim any medical accuracy.

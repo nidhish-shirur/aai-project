@@ -1,0 +1,161 @@
+{
+  "id": "gi_upset",
+  "title": "Vomiting or diarrhoea",
+  "triggers": [
+    "vomit",
+    "diarrh",
+    "loose motion",
+    "loose stool",
+    "nausea",
+    "dast",
+    "ulti"
+  ],
+  "fields": [
+    {
+      "key": "vomiting_blood",
+      "type": "bool",
+      "required": true,
+      "question": "Are you vomiting blood or passing black tarry stools?",
+      "description": "Are you vomiting blood or passing black tarry stools?"
+    },
+    {
+      "key": "unable_to_keep_fluids",
+      "type": "bool",
+      "required": true,
+      "question": "Is the person unable to keep fluids down?",
+      "description": "Is the person unable to keep fluids down?"
+    },
+    {
+      "key": "signs_of_dehydration",
+      "type": "bool",
+      "required": true,
+      "question": "Any signs of dehydration: very dry mouth, no urine for 8 hours, or dizziness on standing?",
+      "description": "Any signs of dehydration: very dry mouth, no urine for 8 hours, or dizziness on standing?"
+    },
+    {
+      "key": "blood_in_stool",
+      "type": "bool",
+      "required": true,
+      "question": "Any blood in the stool?",
+      "description": "Any blood in the stool?"
+    },
+    {
+      "key": "fever",
+      "type": "bool",
+      "required": true,
+      "question": "Any fever?",
+      "description": "Any fever?"
+    },
+    {
+      "key": "vomiting",
+      "type": "bool",
+      "required": false,
+      "question": "Is there vomiting (as well as, or instead of, diarrhoea)?",
+      "description": "Is there vomiting (as well as, or instead of, diarrhoea)?"
+    }
+  ],
+  "red_flags": [
+    {
+      "id": "gi_vomit_blood",
+      "label": "Vomiting blood or black stools",
+      "when": "vomiting_blood",
+      "category": "medical"
+    }
+  ],
+  "rules": [
+    {
+      "id": "gi_cannot_keep_fluids",
+      "urgency": "urgent",
+      "when": "unable_to_keep_fluids",
+      "reason": "Being unable to keep fluids down risks dehydration."
+    },
+    {
+      "id": "gi_dehydration",
+      "urgency": "urgent",
+      "when": "signs_of_dehydration",
+      "reason": "Signs of dehydration need same-day assessment."
+    },
+    {
+      "id": "gi_blood_stool",
+      "urgency": "urgent",
+      "when": "blood_in_stool",
+      "reason": "Blood in the stool needs same-day assessment."
+    },
+    {
+      "id": "gi_toddler",
+      "urgency": "urgent",
+      "when": {
+        "all": [
+          [
+            "age_years",
+            "<",
+            2
+          ],
+          [
+            "duration_days",
+            ">=",
+            1
+          ]
+        ]
+      },
+      "reason": "Vomiting or diarrhoea in a child under 2 for a day or more."
+    },
+    {
+      "id": "gi_severe",
+      "urgency": "urgent",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "The person rates the illness as severe."
+    },
+    {
+      "id": "gi_fever",
+      "urgency": "moderate",
+      "when": {
+        "all": [
+          "fever",
+          [
+            "duration_days",
+            ">=",
+            2
+          ]
+        ]
+      },
+      "reason": "Fever with vomiting or diarrhoea for two days or more."
+    },
+    {
+      "id": "gi_three_days",
+      "urgency": "moderate",
+      "when": [
+        "duration_days",
+        ">=",
+        3
+      ],
+      "reason": "Symptoms lasting three days or more."
+    },
+    {
+      "id": "gi_moderate",
+      "urgency": "moderate",
+      "when": [
+        "severity",
+        "==",
+        "moderate"
+      ],
+      "reason": "The person rates the illness as moderate."
+    }
+  ],
+  "default_urgency": "low",
+  "warning_signs": [
+    "Unable to keep fluids down",
+    "Signs of dehydration",
+    "Blood in vomit or stool",
+    "Severe belly pain",
+    "Symptoms lasting more than 2 to 3 days"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

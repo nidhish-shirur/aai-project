@@ -1,0 +1,807 @@
+[
+ {
+  "id": "H01",
+  "group": "typical",
+  "gold": "emergency",
+  "text": "My husband suddenly can't speak properly and one side of his face is drooping.",
+  "facts": {
+   "age_years": 62,
+   "sex": "male",
+   "duration_days": 0.02,
+   "severity": "severe",
+   "chronic_conditions": [
+    "hypertension"
+   ],
+   "face_droop": true,
+   "speech_difficulty": true,
+   "neuro_deficit": true
+  },
+  "rationale": "Sudden speech difficulty and facial droop are stroke warning signs: call emergency services."
+ },
+ {
+  "id": "H02",
+  "group": "child",
+  "gold": "emergency",
+  "text": "My 4 year old swallowed a lot of my grandmother's heart tablets about 20 minutes ago.",
+  "facts": {
+   "age_years": 4,
+   "sex": "male",
+   "duration_days": 0.02,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "poisoning_or_overdose": true
+  },
+  "rationale": "Possible poisoning/overdose in a young child needs emergency care immediately."
+ },
+ {
+  "id": "H03",
+  "group": "typical",
+  "gold": "emergency",
+  "text": "I've had a cough and now I'm coughing up a lot of bright red blood and I feel breathless.",
+  "facts": {
+   "age_years": 45,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "coughing_blood": true,
+   "breathing_difficulty": true
+  },
+  "rationale": "Heavy haemoptysis with breathlessness is an emergency."
+ },
+ {
+  "id": "H04",
+  "group": "pregnancy",
+  "gold": "emergency",
+  "text": "I am 8 months pregnant and I am bleeding heavily from the vagina and have severe belly pain.",
+  "facts": {
+   "age_years": 29,
+   "sex": "female",
+   "duration_days": 0.1,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "pregnant": true,
+   "vaginal_bleeding": true,
+   "severe_bleeding": true,
+   "abdominal_pain": true
+  },
+  "rationale": "Heavy bleeding with severe pain in late pregnancy suggests an obstetric emergency."
+ },
+ {
+  "id": "H05",
+  "group": "elderly",
+  "gold": "emergency",
+  "text": "My father is 70, he fainted at home and now he is confused and says his heart is racing.",
+  "facts": {
+   "age_years": 70,
+   "sex": "male",
+   "duration_days": 0.05,
+   "severity": "severe",
+   "chronic_conditions": [
+    "heart_disease"
+   ],
+   "loss_of_consciousness": true,
+   "confusion": true,
+   "palpitations": true
+  },
+  "rationale": "Collapse with new confusion and palpitations in an older man with heart disease needs emergency assessment."
+ },
+ {
+  "id": "H06",
+  "group": "typical",
+  "gold": "emergency",
+  "text": "I was stung by a bee and my lips and tongue are swelling, it is getting hard to breathe.",
+  "facts": {
+   "age_years": 33,
+   "sex": "female",
+   "duration_days": 0.05,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "swelling_throat_tongue": true,
+   "breathing_difficulty": true
+  },
+  "rationale": "Swelling of lips/tongue with breathing difficulty after a sting suggests anaphylaxis."
+ },
+ {
+  "id": "H07",
+  "group": "language",
+  "gold": "emergency",
+  "text": "Mere pitaji ko seene mein bahut dard hai aur paseena aa raha hai.",
+  "facts": {
+   "age_years": 60,
+   "sex": "male",
+   "duration_days": 0.05,
+   "severity": "severe",
+   "chronic_conditions": [
+    "diabetes"
+   ],
+   "chest_pain": true,
+   "sweating": true,
+   "pain_crushing_pressure": true
+  },
+  "rationale": "(Hinglish) Father with severe chest pain and sweating: possible heart attack."
+ },
+ {
+  "id": "H08",
+  "group": "typical",
+  "gold": "emergency",
+  "text": "He was hit by a bike and he is bleeding heavily from his leg and it won't stop.",
+  "facts": {
+   "age_years": 35,
+   "sex": "male",
+   "duration_days": 0.05,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "severe_bleeding": true
+  },
+  "rationale": "Uncontrolled heavy bleeding is an emergency."
+ },
+ {
+  "id": "H09",
+  "group": "mental_health",
+  "gold": "emergency",
+  "text": "I feel hopeless and I swallowed a lot of tablets to end it, now I feel very sleepy.",
+  "facts": {
+   "age_years": 22,
+   "sex": "female",
+   "duration_days": 0.05,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "suicidal_thoughts": true,
+   "poisoning_or_overdose": true,
+   "confusion": true
+  },
+  "rationale": "Intentional overdose with suicidal intent and drowsiness: emergency and mental-health support."
+ },
+ {
+  "id": "H10",
+  "group": "child",
+  "gold": "emergency",
+  "text": "My 2 month old baby has a fever of 38.5, is very sleepy and is feeding badly.",
+  "facts": {
+   "age_years": 0.17,
+   "sex": "female",
+   "duration_days": 1,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "fever": true,
+   "confusion": true,
+   "temperature_c": 38.5,
+   "unable_to_drink_fluids": true
+  },
+  "rationale": "Fever in a baby under 3 months who is drowsy and not feeding needs emergency assessment."
+ },
+ {
+  "id": "H11",
+  "group": "typical",
+  "gold": "emergency",
+  "text": "I got the worst headache of my life all of a sudden, I feel sick and my neck is stiff.",
+  "facts": {
+   "age_years": 38,
+   "sex": "female",
+   "duration_days": 0.02,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "thunderclap": true,
+   "stiff_neck": true,
+   "vomiting": true
+  },
+  "rationale": "Sudden thunderclap headache with neck stiffness and vomiting: possible bleed or meningitis."
+ },
+ {
+  "id": "U01",
+  "group": "typical",
+  "gold": "urgent",
+  "text": "I'm 24, I've had burning urine and fever for 3 days and now a pain in my right back with chills.",
+  "facts": {
+   "age_years": 24,
+   "sex": "female",
+   "duration_days": 3,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "flank_pain": true,
+   "fever": true,
+   "temperature_c": 38.8
+  },
+  "rationale": "Urinary symptoms with fever and flank pain suggest a kidney infection: same-day assessment."
+ },
+ {
+  "id": "U02",
+  "group": "elderly",
+  "gold": "urgent",
+  "text": "My 70 year old mother has diabetes and has been vomiting with loose motions for 2 days, she can't keep water down and her mouth is very dry.",
+  "facts": {
+   "age_years": 70,
+   "sex": "female",
+   "duration_days": 2,
+   "severity": "severe",
+   "chronic_conditions": [
+    "diabetes"
+   ],
+   "unable_to_keep_fluids": true,
+   "signs_of_dehydration": true,
+   "vomiting": true
+  },
+  "rationale": "Dehydration with inability to keep fluids in an older person with diabetes: same-day care."
+ },
+ {
+  "id": "U03",
+  "group": "typical",
+  "gold": "urgent",
+  "text": "I have severe pain in my lower right belly since last night, it hurts more when I move and I have a fever.",
+  "facts": {
+   "age_years": 19,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "pain_location": "lower_right",
+   "fever": true,
+   "vomiting": true,
+   "abdomen_rigid": false
+  },
+  "rationale": "Right lower abdominal pain with fever is an appendicitis-type picture: same-day assessment."
+ },
+ {
+  "id": "U04",
+  "group": "typical",
+  "gold": "urgent",
+  "text": "I fell off my bike, my wrist looks bent and I can't use my hand, it is very painful.",
+  "facts": {
+   "age_years": 31,
+   "sex": "male",
+   "duration_days": 0.1,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "deformity_or_cant_bear_weight": true
+  },
+  "rationale": "Visible deformity after a fall suggests a fracture: needs same-day imaging."
+ },
+ {
+  "id": "U05",
+  "group": "borderline",
+  "gold": "urgent",
+  "text": "I have chronic lung disease, a wheezy cough, and I get breathless after a few steps and my inhaler is not helping.",
+  "facts": {
+   "age_years": 55,
+   "sex": "male",
+   "duration_days": 4,
+   "severity": "severe",
+   "chronic_conditions": [
+    "lung_disease"
+   ],
+   "breathing_difficulty": true,
+   "wheezing": true,
+   "fever": false,
+   "coughing_blood": false,
+   "chest_pain": false
+  },
+  "rationale": "Worsening breathlessness not relieved by the usual inhaler in chronic lung disease needs same-day care (borderline emergency)."
+ },
+ {
+  "id": "U06",
+  "group": "typical",
+  "gold": "urgent",
+  "text": "I cut my hand with a kitchen knife 3 hours ago, it is a deep gaping cut but the bleeding stopped with pressure.",
+  "facts": {
+   "age_years": 40,
+   "sex": "female",
+   "duration_days": 0.1,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "deep_or_gaping_wound": true
+  },
+  "rationale": "A deep gaping wound needs closure within hours."
+ },
+ {
+  "id": "U07",
+  "group": "child",
+  "gold": "urgent",
+  "text": "My 3 year old has had a fever of 39.5 for 3 days and is hardly drinking anything.",
+  "facts": {
+   "age_years": 3,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "fever": true,
+   "temperature_c": 39.5,
+   "unable_to_drink_fluids": true
+  },
+  "rationale": "A young child with high fever and poor fluid intake needs same-day assessment."
+ },
+ {
+  "id": "U08",
+  "group": "typical",
+  "gold": "urgent",
+  "text": "I have not been able to pass urine at all since morning and my lower belly is swollen and painful.",
+  "facts": {
+   "age_years": 66,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "unable_to_pass_urine": true
+  },
+  "rationale": "Acute urinary retention needs same-day care."
+ },
+ {
+  "id": "U09",
+  "group": "borderline",
+  "gold": "urgent",
+  "text": "I have had a sore throat for 4 days and now I can't swallow even my saliva and my voice sounds muffled.",
+  "facts": {
+   "age_years": 26,
+   "sex": "male",
+   "duration_days": 4,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "cannot_swallow": true,
+   "fever": true,
+   "breathing_difficulty": false,
+   "swelling_throat_tongue": false
+  },
+  "rationale": "Unable to swallow saliva with a muffled voice suggests a deep throat infection: same-day care (borderline emergency)."
+ },
+ {
+  "id": "U10",
+  "group": "typical",
+  "gold": "urgent",
+  "text": "I spilled boiling water on my forearm, the burn is bigger than my palm, blistered and very painful.",
+  "facts": {
+   "age_years": 34,
+   "sex": "female",
+   "duration_days": 0.1,
+   "severity": "severe",
+   "chronic_conditions": [],
+   "serious_burn": true
+  },
+  "rationale": "A burn larger than the palm with blistering needs same-day assessment."
+ },
+ {
+  "id": "U11",
+  "group": "pregnancy",
+  "gold": "urgent",
+  "text": "I'm 20 weeks pregnant with a fever of 38.6 and a dull pain in my back for 2 days.",
+  "facts": {
+   "age_years": 27,
+   "sex": "female",
+   "duration_days": 2,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "pregnant": true,
+   "fever": true,
+   "temperature_c": 38.6,
+   "flank_pain": true
+  },
+  "rationale": "Fever with back/flank pain in pregnancy raises concern for kidney infection: same-day care."
+ },
+ {
+  "id": "U12",
+  "group": "borderline",
+  "gold": "urgent",
+  "text": "I have had a fever for 2 days and my neck feels stiff, maybe from sleeping badly. I am not confused and I can drink fine.",
+  "facts": {
+   "age_years": 25,
+   "sex": "male",
+   "duration_days": 2,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "fever": true,
+   "stiff_neck": true,
+   "confusion": false,
+   "rash_nonblanching": false,
+   "temperature_c": 38.4
+  },
+  "rationale": "Fever with a stiff neck needs same-day assessment to exclude meningitis, even when otherwise well (borderline emergency)."
+ },
+ {
+  "id": "M01",
+  "group": "typical",
+  "gold": "moderate",
+  "text": "I'm 30 and I've had a fever of 101 F for 3 days with body ache. I can breathe fine and I'm drinking well.",
+  "facts": {
+   "age_years": 30,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "fever": true,
+   "temperature_c": 38.3
+  },
+  "rationale": "Fever lasting 3 days without warning signs: see a doctor within a few days."
+ },
+ {
+  "id": "M02",
+  "group": "typical",
+  "gold": "moderate",
+  "text": "I'm 45, a smoker, I've had a cough for 3 weeks and I have lost some weight.",
+  "facts": {
+   "age_years": 45,
+   "sex": "male",
+   "duration_days": 21,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "breathing_difficulty": false,
+   "fever": false
+  },
+  "rationale": "A cough lasting weeks with weight loss needs a doctor's review (not an emergency)."
+ },
+ {
+  "id": "M03",
+  "group": "typical",
+  "gold": "moderate",
+  "text": "I'm 26 and I've had burning when I pee and a frequent urge for 2 days, no fever, no back pain.",
+  "facts": {
+   "age_years": 26,
+   "sex": "female",
+   "duration_days": 2,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "fever": false,
+   "flank_pain": false,
+   "blood_in_urine": false,
+   "unable_to_pass_urine": false
+  },
+  "rationale": "Uncomplicated urinary symptoms: doctor within 1-3 days."
+ },
+ {
+  "id": "M04",
+  "group": "child",
+  "gold": "moderate",
+  "text": "My 6 year old has had ear pain for 2 days and a mild fever of 38, nothing coming out of the ear.",
+  "facts": {
+   "age_years": 6,
+   "sex": "female",
+   "duration_days": 2,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "fever": true,
+   "temperature_c": 38.0,
+   "hearing_loss_sudden": false
+  },
+  "rationale": "Child with earache and mild fever: doctor within a few days."
+ },
+ {
+  "id": "M05",
+  "group": "typical",
+  "gold": "moderate",
+  "text": "I've had a headache every day for 5 days, moderate, no weakness, no fever, no vomiting.",
+  "facts": {
+   "age_years": 35,
+   "sex": "female",
+   "duration_days": 5,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "fever": false,
+   "thunderclap": false
+  },
+  "rationale": "Persistent daily headache without red flags: see a doctor within a few days."
+ },
+ {
+  "id": "M06",
+  "group": "out_of_scope",
+  "gold": "moderate",
+  "text": "I've had lower back pain for 2 weeks since lifting something heavy. No leg weakness and no urinary problems.",
+  "facts": {
+   "age_years": 38,
+   "sex": "male",
+   "duration_days": 14,
+   "severity": "moderate",
+   "chronic_conditions": []
+  },
+  "rationale": "Back pain not improving after 2 weeks: doctor review (no red flags)."
+ },
+ {
+  "id": "M07",
+  "group": "typical",
+  "gold": "moderate",
+  "text": "I have had loose motions for 4 days with a mild fever, no blood, I'm drinking fine.",
+  "facts": {
+   "age_years": 28,
+   "sex": "male",
+   "duration_days": 4,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "fever": true,
+   "vomiting": false,
+   "blood_in_stool": false,
+   "unable_to_keep_fluids": false,
+   "signs_of_dehydration": false
+  },
+  "rationale": "Diarrhoea lasting 4 days with fever: doctor within a few days."
+ },
+ {
+  "id": "M08",
+  "group": "chronic",
+  "gold": "moderate",
+  "text": "I'm 68 with high blood pressure and I've felt dizzy when I stand up for the last 3 days. No fainting, no chest pain.",
+  "facts": {
+   "age_years": 68,
+   "sex": "female",
+   "duration_days": 3,
+   "severity": "moderate",
+   "chronic_conditions": [
+    "hypertension"
+   ],
+   "loss_of_consciousness": false,
+   "chest_pain": false,
+   "neuro_deficit": false
+  },
+  "rationale": "Recurrent dizziness in an older person on treatment for hypertension: doctor review within days."
+ },
+ {
+  "id": "M09",
+  "group": "typical",
+  "gold": "moderate",
+  "text": "I have a sore throat and a fever of 38.5 for 3 days, I'm 19, swallowing is fine and no breathing problem.",
+  "facts": {
+   "age_years": 19,
+   "sex": "male",
+   "duration_days": 3,
+   "severity": "moderate",
+   "chronic_conditions": [],
+   "fever": true,
+   "temperature_c": 38.5
+  },
+  "rationale": "Sore throat with fever for 3 days: doctor within a few days."
+ },
+ {
+  "id": "M10",
+  "group": "elderly",
+  "gold": "moderate",
+  "text": "My 80 year old father has heart disease and has had a mild cough and a low fever for 2 days, otherwise OK.",
+  "facts": {
+   "age_years": 80,
+   "sex": "male",
+   "duration_days": 2,
+   "severity": "mild",
+   "chronic_conditions": [
+    "heart_disease"
+   ],
+   "fever": true,
+   "temperature_c": 37.8,
+   "breathing_difficulty": false
+  },
+  "rationale": "A mild respiratory illness in a frail older person with heart disease deserves review within days."
+ },
+ {
+  "id": "M11",
+  "group": "out_of_scope",
+  "gold": "moderate",
+  "text": "I have an itchy rash spreading over my chest for 4 days. No fever, I feel fine otherwise.",
+  "facts": {
+   "age_years": 32,
+   "sex": "female",
+   "duration_days": 4,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": false
+  },
+  "rationale": "Spreading rash lasting days without red flags: doctor review within days."
+ },
+ {
+  "id": "L01",
+  "group": "typical",
+  "gold": "low",
+  "text": "I have a mild sore throat since yesterday, no fever, swallowing is fine.",
+  "facts": {
+   "age_years": 22,
+   "sex": "female",
+   "duration_days": 1,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": false,
+   "cannot_swallow": false
+  },
+  "rationale": "Mild short sore throat: self-care."
+ },
+ {
+  "id": "L02",
+  "group": "out_of_scope",
+  "gold": "low",
+  "text": "I have a runny nose and sneezing for 2 days, mild, no fever.",
+  "facts": {
+   "age_years": 29,
+   "sex": "male",
+   "duration_days": 2,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": false
+  },
+  "rationale": "Common cold symptoms: self-care."
+ },
+ {
+  "id": "L03",
+  "group": "typical",
+  "gold": "low",
+  "text": "I have a mild headache since this morning after sleeping badly, nothing else wrong.",
+  "facts": {
+   "age_years": 28,
+   "sex": "male",
+   "duration_days": 0.5,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": false,
+   "stiff_neck": false
+  },
+  "rationale": "Mild tension-type headache: self-care."
+ },
+ {
+  "id": "L04",
+  "group": "typical",
+  "gold": "low",
+  "text": "I got a small paper cut on my finger, it stopped bleeding and looks clean.",
+  "facts": {
+   "age_years": 30,
+   "sex": "female",
+   "duration_days": 0.1,
+   "severity": "mild",
+   "chronic_conditions": []
+  },
+  "rationale": "Trivial cut: self-care."
+ },
+ {
+  "id": "L05",
+  "group": "typical",
+  "gold": "low",
+  "text": "I had a bit of stomach upset after eating out, one loose stool, no fever and I'm drinking fine.",
+  "facts": {
+   "age_years": 24,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": false,
+   "vomiting": false,
+   "blood_in_stool": false
+  },
+  "rationale": "Mild short-lived stomach upset: self-care."
+ },
+ {
+  "id": "L06",
+  "group": "typical",
+  "gold": "low",
+  "text": "I twisted my ankle yesterday, it's a bit swollen and I'm walking with a limp, but I can put weight on it.",
+  "facts": {
+   "age_years": 27,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "deformity_or_cant_bear_weight": false,
+   "numbness_or_colour_change": false
+  },
+  "rationale": "Mild sprain, bears weight, no deformity: self-care and review if not improving."
+ },
+ {
+  "id": "L07",
+  "group": "typical",
+  "gold": "low",
+  "text": "I have had a mild cough for 3 days, no fever and no breathing trouble.",
+  "facts": {
+   "age_years": 35,
+   "sex": "female",
+   "duration_days": 3,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": false,
+   "breathing_difficulty": false
+  },
+  "rationale": "Mild short cough: self-care."
+ },
+ {
+  "id": "L08",
+  "group": "typical",
+  "gold": "low",
+  "text": "I have a slight temperature of 99.5 F since this evening, I feel a little tired, nothing else.",
+  "facts": {
+   "age_years": 25,
+   "sex": "female",
+   "duration_days": 0.5,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": true,
+   "temperature_c": 37.5
+  },
+  "rationale": "Low-grade fever for hours without warning signs: self-care and monitor."
+ },
+ {
+  "id": "L09",
+  "group": "out_of_scope",
+  "gold": "low",
+  "text": "My thigh muscles ache after the gym yesterday, nothing else.",
+  "facts": {
+   "age_years": 30,
+   "sex": "male",
+   "duration_days": 1,
+   "severity": "mild",
+   "chronic_conditions": []
+  },
+  "rationale": "Post-exercise muscle ache: self-care."
+ },
+ {
+  "id": "L10",
+  "group": "out_of_scope",
+  "gold": "low",
+  "text": "I get mild heartburn after meals for a few days. No chest pain, no vomiting, no black stools.",
+  "facts": {
+   "age_years": 40,
+   "sex": "male",
+   "duration_days": 4,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "chest_pain": false,
+   "vomiting": false,
+   "blood_in_stool": false
+  },
+  "rationale": "Mild heartburn without alarm features: self-care."
+ },
+ {
+  "id": "L11",
+  "group": "out_of_scope",
+  "gold": "low",
+  "text": "I have an itchy red bump from an insect bite on my arm, no swelling elsewhere and no trouble breathing.",
+  "facts": {
+   "age_years": 21,
+   "sex": "female",
+   "duration_days": 1,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "breathing_difficulty": false,
+   "swelling_throat_tongue": false
+  },
+  "rationale": "Local insect bite reaction: self-care."
+ },
+ {
+  "id": "L12",
+  "group": "negation",
+  "gold": "low",
+  "text": "I have no chest pain and no breathing problems, just a mild headache since this morning.",
+  "facts": {
+   "age_years": 31,
+   "sex": "male",
+   "duration_days": 0.5,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "chest_pain": false,
+   "breathing_difficulty": false,
+   "fever": false
+  },
+  "rationale": "Red-flag words are negated; a mild headache is self-care. Tests that denials do not trigger alarms."
+ },
+ {
+  "id": "L13",
+  "group": "negation",
+  "gold": "low",
+  "text": "My father had a heart attack last year but today he only has a mild cold with a runny nose.",
+  "facts": {
+   "age_years": 66,
+   "sex": "male",
+   "duration_days": 2,
+   "severity": "mild",
+   "chronic_conditions": [
+    "heart_disease"
+   ],
+   "chest_pain": false,
+   "breathing_difficulty": false,
+   "fever": false
+  },
+  "rationale": "History of a past heart attack is not an emergency now; the current illness is mild."
+ },
+ {
+  "id": "L14",
+  "group": "language",
+  "gold": "low",
+  "text": "Mujhe subah se halka sa sir dard hai, aur koi problem nahi.",
+  "facts": {
+   "age_years": 26,
+   "sex": "male",
+   "duration_days": 0.5,
+   "severity": "mild",
+   "chronic_conditions": [],
+   "fever": false
+  },
+  "rationale": "(Hinglish) Mild headache only: self-care."
+ }
+]

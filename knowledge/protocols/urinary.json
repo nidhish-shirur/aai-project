@@ -1,0 +1,110 @@
+{
+  "id": "urinary",
+  "title": "Urinary symptoms",
+  "triggers": [
+    "urine",
+    "urinat",
+    "urinary",
+    "burning urination",
+    "burning while urinating",
+    "painful urination",
+    "peshab",
+    "pee"
+  ],
+  "fields": [
+    {
+      "key": "unable_to_pass_urine",
+      "type": "bool",
+      "required": true,
+      "question": "Is the person unable to pass urine at all?",
+      "description": "Is the person unable to pass urine at all?"
+    },
+    {
+      "key": "flank_pain",
+      "type": "bool",
+      "required": true,
+      "question": "Any pain in the side or lower back?",
+      "description": "Any pain in the side or lower back?"
+    },
+    {
+      "key": "fever",
+      "type": "bool",
+      "required": true,
+      "question": "Any fever or shivering?",
+      "description": "Any fever or shivering?"
+    },
+    {
+      "key": "blood_in_urine",
+      "type": "bool",
+      "required": true,
+      "question": "Any blood in the urine?",
+      "description": "Any blood in the urine?"
+    }
+  ],
+  "red_flags": [],
+  "rules": [
+    {
+      "id": "urine_retention",
+      "urgency": "urgent",
+      "when": "unable_to_pass_urine",
+      "reason": "Being unable to pass urine needs same-day assessment."
+    },
+    {
+      "id": "urine_fever_flank",
+      "urgency": "urgent",
+      "when": {
+        "all": [
+          "fever",
+          "flank_pain"
+        ]
+      },
+      "reason": "Fever with side or back pain needs same-day assessment."
+    },
+    {
+      "id": "urine_severe",
+      "urgency": "urgent",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "The person rates the problem as severe."
+    },
+    {
+      "id": "urine_flank",
+      "urgency": "moderate",
+      "when": "flank_pain",
+      "reason": "Side or back pain with urinary symptoms."
+    },
+    {
+      "id": "urine_blood",
+      "urgency": "moderate",
+      "when": "blood_in_urine",
+      "reason": "Blood in the urine should be reviewed by a doctor."
+    },
+    {
+      "id": "urine_fever",
+      "urgency": "moderate",
+      "when": "fever",
+      "reason": "Fever with urinary symptoms."
+    },
+    {
+      "id": "urine_pregnant",
+      "urgency": "moderate",
+      "when": "pregnant",
+      "reason": "Urinary symptoms in possible pregnancy."
+    }
+  ],
+  "default_urgency": "moderate",
+  "warning_signs": [
+    "Fever or shivering",
+    "Pain in the side or back",
+    "Blood in the urine",
+    "Unable to pass urine",
+    "Vomiting"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

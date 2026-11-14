@@ -1,0 +1,154 @@
+{
+  "id": "cough_breathing",
+  "title": "Cough or breathing problem",
+  "triggers": [
+    "cough",
+    "wheez",
+    "breath",
+    "khansi",
+    "saans",
+    "phlegm",
+    "sputum"
+  ],
+  "fields": [
+    {
+      "key": "breathing_difficulty",
+      "type": "bool",
+      "required": true,
+      "question": "Any difficulty breathing?",
+      "description": "Any difficulty breathing?"
+    },
+    {
+      "key": "coughing_blood",
+      "type": "bool",
+      "required": true,
+      "question": "Are you coughing up blood?",
+      "description": "Are you coughing up blood?"
+    },
+    {
+      "key": "chest_pain",
+      "type": "bool",
+      "required": true,
+      "question": "Any chest pain?",
+      "description": "Any chest pain?"
+    },
+    {
+      "key": "wheezing",
+      "type": "bool",
+      "required": true,
+      "question": "Any wheezing or whistling sound when you breathe?",
+      "description": "Any wheezing or whistling sound when you breathe?"
+    },
+    {
+      "key": "fever",
+      "type": "bool",
+      "required": true,
+      "question": "Any fever?",
+      "description": "Any fever?"
+    }
+  ],
+  "red_flags": [
+    {
+      "id": "coughing_blood_flag",
+      "label": "Coughing up blood",
+      "when": "coughing_blood",
+      "category": "medical"
+    }
+  ],
+  "rules": [
+    {
+      "id": "cough_severe",
+      "urgency": "urgent",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "The person rates the problem as severe."
+    },
+    {
+      "id": "cough_chest_pain",
+      "urgency": "urgent",
+      "when": "chest_pain",
+      "reason": "Chest pain together with cough needs same-day assessment."
+    },
+    {
+      "id": "cough_wheeze_severe",
+      "urgency": "urgent",
+      "when": {
+        "all": [
+          "wheezing",
+          [
+            "severity",
+            "==",
+            "moderate"
+          ]
+        ]
+      },
+      "reason": "Wheezing of moderate severity needs same-day assessment."
+    },
+    {
+      "id": "cough_wheeze",
+      "urgency": "moderate",
+      "when": "wheezing",
+      "reason": "Wheezing should be reviewed by a doctor."
+    },
+    {
+      "id": "cough_fever_3d",
+      "urgency": "moderate",
+      "when": {
+        "all": [
+          "fever",
+          [
+            "duration_days",
+            ">=",
+            3
+          ]
+        ]
+      },
+      "reason": "Cough with fever for three days or more."
+    },
+    {
+      "id": "cough_three_weeks",
+      "urgency": "moderate",
+      "when": [
+        "duration_days",
+        ">=",
+        21
+      ],
+      "reason": "A cough lasting three weeks or more needs medical evaluation."
+    },
+    {
+      "id": "cough_one_week",
+      "urgency": "moderate",
+      "when": [
+        "duration_days",
+        ">=",
+        7
+      ],
+      "reason": "A cough lasting a week or more should be reviewed."
+    },
+    {
+      "id": "cough_moderate",
+      "urgency": "moderate",
+      "when": [
+        "severity",
+        "==",
+        "moderate"
+      ],
+      "reason": "The person rates the problem as moderate."
+    }
+  ],
+  "default_urgency": "low",
+  "warning_signs": [
+    "Difficulty breathing",
+    "Coughing up blood",
+    "Chest pain",
+    "Blue lips",
+    "Cough lasting more than a week"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

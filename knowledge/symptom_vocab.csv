@@ -1,0 +1,142 @@
+symptom,severity_weight,red_flag_related,source,synonyms
+abdominal_pain,5.0,False,curated+kaggle,belly pain|pet dard|pet mein dard|stomach ache|stomach cramps|stomach pain|tummy ache
+abnormal_menstruation,6.0,False,kaggle,
+acidity,3.0,False,kaggle,
+acute_liver_failure,6.0,False,kaggle,
+anxiety,4.0,False,kaggle,
+back_pain,3.0,False,curated+kaggle,backache|kamar dard|lower back pain
+belly_pain,4.0,False,kaggle,
+blackheads,2.0,False,kaggle,
+bladder_discomfort,4.0,False,kaggle,
+blister,4.0,False,kaggle,
+blood_in_stool,5.0,True,curated+kaggle,blood in motion|bloody stool|red stool
+blood_in_urine,6.0,False,curated+kaggle,bloody urine|pink urine|red urine
+blurred_vision,5.0,False,curated+kaggle,blurry vision|cannot see clearly|double vision
+body_ache,,False,curated,aching all over|badan dard|body pain|muscle pain|myalgia
+breathlessness,4.0,True,curated+kaggle,breathing difficulty|difficulty breathing|out of breath|saans phoolna|shortness of breath|trouble breathing
+brittle_nails,5.0,False,kaggle,
+bruising,4.0,False,kaggle,
+burning_urination,6.0,False,curated+kaggle,burning when i pee|burning while urinating|dysuria|jalan|painful urination
+chest_pain,7.0,True,curated+kaggle,chest discomfort|chest pressure|chest tightness|pain in chest|seene mein dard
+chills,3.0,False,curated+kaggle,rigors|shivering|thand lagna
+cold_hands_and_feets,5.0,False,kaggle,
+coma,7.0,True,kaggle,
+confusion,2.0,True,curated+kaggle,confused|disoriented|drowsy and confused|not making sense
+congestion,5.0,False,kaggle,
+constipation,4.0,False,curated+kaggle,hard stools|kabz|not passing stool
+continuous_feel_of_urine,6.0,False,kaggle,
+cough,4.0,False,curated+kaggle,coughing|dry cough|khansi|wet cough
+coughing_blood,5.0,True,curated+kaggle,blood in sputum|coughing up blood
+cramps,4.0,False,kaggle,
+dark_urine,4.0,False,kaggle,
+dehydration,4.0,False,kaggle,
+depression,3.0,False,kaggle,
+diarrhoea,6.0,False,curated+kaggle,dast|diarrhea|loose motions|loose stool|loose stools|watery stools
+dischromic_patches,6.0,False,kaggle,
+distention_of_abdomen,4.0,False,kaggle,
+dizziness,4.0,False,curated+kaggle,chakkar|dizzy|giddy|light-headed|lightheaded|room spinning|vertigo
+drying_and_tingling_lips,4.0,False,kaggle,
+ear_pain,,False,curated,ear ache|earache|kaan dard
+enlarged_thyroid,6.0,False,kaggle,
+excessive_hunger,4.0,False,kaggle,
+extra_marital_contacts,5.0,False,kaggle,
+fainting,,True,curated,behoshi|blacked out|fainted|lost consciousness|passed out
+family_history,5.0,False,kaggle,
+fast_heart_rate,5.0,False,kaggle,
+fatigue,4.0,False,curated+kaggle,exhaustion|kamzori|no energy|tired|tiredness|weakness
+fever,7.0,False,curated+kaggle,bukhar|feverish|high temperature|running a temperature|temperature
+fluid_overload,6.0,False,kaggle,
+foul_smell_ofurine,5.0,False,kaggle,
+headache,3.0,False,curated+kaggle,head ache|head pain|migraine|sar dard|sir dard
+heavy_bleeding,,True,curated,bleeding heavily|bleeding will not stop|severe bleeding
+hip_joint_pain,2.0,False,kaggle,
+history_of_alcohol_consumption,5.0,False,kaggle,
+increased_appetite,5.0,False,kaggle,
+indigestion,5.0,False,kaggle,
+inflammatory_nails,2.0,False,kaggle,
+injury,,False,curated,accident|chot lagi|fell down|hurt myself
+internal_itching,4.0,False,kaggle,
+irregular_sugar_level,5.0,False,kaggle,
+irritability,2.0,False,kaggle,
+irritation_in_anus,6.0,False,kaggle,
+itching,1.0,False,curated+kaggle,itchy|khujli
+joint_pain,3.0,False,curated+kaggle,arthralgia|jodon mein dard|painful joints
+knee_pain,3.0,False,kaggle,
+lack_of_concentration,3.0,False,kaggle,
+lethargy,2.0,False,kaggle,
+loss_of_appetite,4.0,False,curated+kaggle,bhookh nahi lagna|no appetite|not hungry
+loss_of_balance,4.0,True,kaggle,
+loss_of_smell,3.0,False,curated+kaggle,cannot smell|no sense of smell
+malaise,6.0,False,kaggle,
+mood_swings,3.0,False,kaggle,
+movement_stiffness,5.0,False,kaggle,
+mucoid_sputum,4.0,False,kaggle,
+muscle_pain,2.0,False,kaggle,
+muscle_wasting,3.0,False,kaggle,
+muscle_weakness,2.0,False,kaggle,
+nausea,5.0,False,curated+kaggle,feeling sick|ji michlana|queasy
+neck_pain,5.0,False,kaggle,
+nodal_skin_eruptions,4.0,False,kaggle,
+numbness,,False,curated,pins and needles|sunn|tingling
+obesity,4.0,False,kaggle,
+pain_behind_the_eyes,4.0,False,kaggle,
+pain_during_bowel_movements,5.0,False,kaggle,
+pain_in_anal_region,6.0,False,kaggle,
+painful_walking,2.0,False,kaggle,
+palpitations,4.0,True,curated+kaggle,dhadkan tez|fast heartbeat|heart pounding|irregular heartbeat|racing heart
+passage_of_gases,5.0,False,kaggle,
+patches_in_throat,6.0,False,kaggle,
+phlegm,5.0,False,kaggle,
+polyuria,4.0,False,kaggle,
+prognosis,5.0,False,kaggle,
+prominent_veins_on_calf,6.0,False,kaggle,
+puffy_face_and_eyes,5.0,False,kaggle,
+pus_filled_pimples,2.0,False,kaggle,
+rash,3.0,False,curated+kaggle,daane|rashes|red spots|skin rash
+receiving_blood_transfusion,5.0,False,kaggle,
+receiving_unsterile_injections,2.0,False,kaggle,
+red_sore_around_nose,2.0,False,kaggle,
+red_spots_over_body,3.0,False,kaggle,
+redness_of_eyes,5.0,False,kaggle,
+restlessness,5.0,False,kaggle,
+runny_nose,5.0,False,curated+kaggle,blocked nose|cold symptoms|nak behna|stuffy nose
+rusty_sputum,4.0,False,kaggle,
+scurring,2.0,False,kaggle,
+seizure,,True,curated,convulsion|convulsions|daura|fit
+shivering,5.0,False,kaggle,
+silver_like_dusting,2.0,False,kaggle,
+sinus_pressure,4.0,False,kaggle,
+skin_peeling,3.0,False,kaggle,
+slurred_speech,4.0,True,curated+kaggle,difficulty speaking|slurring|speech problem|trouble speaking
+small_dents_in_nails,2.0,False,kaggle,
+sneezing,4.0,False,kaggle,
+sore_throat,,False,curated,gala dard|painful throat|scratchy throat|throat pain
+spinning_movements,6.0,False,kaggle,
+stiff_neck,4.0,False,kaggle,
+stomach_bleeding,6.0,False,kaggle,
+sunken_eyes,3.0,False,kaggle,
+sweating,3.0,False,curated+kaggle,cold sweat|night sweats|paseena|sweaty
+swelled_lymph_nodes,6.0,False,kaggle,
+swelling,,False,curated,sujan|swollen
+swelling_joints,5.0,False,kaggle,
+swelling_of_stomach,7.0,False,kaggle,
+swollen_blood_vessels,5.0,False,kaggle,
+swollen_extremeties,5.0,False,kaggle,
+swollen_legs,5.0,False,kaggle,
+throat_irritation,4.0,False,kaggle,
+toxic_look_typhos,5.0,False,kaggle,
+ulcers_on_tongue,4.0,False,kaggle,
+unsteadiness,4.0,True,kaggle,
+visual_disturbances,3.0,False,kaggle,
+vomiting,5.0,False,curated+kaggle,puking|throwing up|ulti|vomit
+vomiting_blood,,True,curated,blood in vomit|vomited blood
+watering_from_eyes,4.0,False,kaggle,
+weakness_in_limbs,7.0,False,kaggle,
+weakness_of_one_body_side,4.0,True,curated+kaggle,arm weakness|lakwa|one sided weakness|weak on one side
+weight_gain,3.0,False,kaggle,
+weight_loss,3.0,False,curated+kaggle,losing weight|unintentional weight loss
+wheezing,,False,curated,wheeze|whistling breath
+yellow_crust_ooze,3.0,False,kaggle,
+yellow_urine,4.0,False,kaggle,
+yellowing_of_eyes,4.0,False,kaggle,
+yellowish_skin,3.0,False,kaggle,

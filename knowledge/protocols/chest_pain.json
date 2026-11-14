@@ -1,0 +1,96 @@
+{
+  "id": "chest_pain",
+  "title": "Chest pain",
+  "triggers": [
+    "chest pain",
+    "chest tight",
+    "chest pressure",
+    "chest discomfort",
+    "seene mein dard",
+    "heart pain"
+  ],
+  "fields": [
+    {
+      "key": "pain_radiates_arm_jaw",
+      "type": "bool",
+      "required": true,
+      "question": "Does the pain spread to your arm, shoulder, jaw or back?",
+      "description": "Does the pain spread to your arm, shoulder, jaw or back?"
+    },
+    {
+      "key": "sweating",
+      "type": "bool",
+      "required": true,
+      "question": "Are you sweating heavily, or feeling sick or light-headed with it?",
+      "description": "Are you sweating heavily, or feeling sick or light-headed with it?"
+    },
+    {
+      "key": "breathing_difficulty",
+      "type": "bool",
+      "required": true,
+      "question": "Any difficulty breathing?",
+      "description": "Any difficulty breathing?"
+    },
+    {
+      "key": "pain_crushing_pressure",
+      "type": "bool",
+      "required": true,
+      "question": "Does it feel like heavy pressure, squeezing or tightness?",
+      "description": "Does it feel like heavy pressure, squeezing or tightness?"
+    },
+    {
+      "key": "pain_over_15_min",
+      "type": "bool",
+      "required": true,
+      "question": "Has the pain lasted more than 15 minutes?",
+      "description": "Has the pain lasted more than 15 minutes?"
+    },
+    {
+      "key": "pain_worse_breathing",
+      "type": "bool",
+      "required": true,
+      "question": "Does the pain get worse when you breathe in or cough?",
+      "description": "Does the pain get worse when you breathe in or cough?",
+      "ask_if": [
+        "pain_radiates_arm_jaw",
+        "==",
+        false
+      ]
+    }
+  ],
+  "red_flags": [],
+  "rules": [
+    {
+      "id": "chest_pain_long_adult",
+      "urgency": "emergency",
+      "when": {
+        "all": [
+          "pain_over_15_min",
+          [
+            "age_years",
+            ">=",
+            35
+          ]
+        ]
+      },
+      "reason": "Chest pain lasting more than 15 minutes in an adult aged 35 or over."
+    },
+    {
+      "id": "chest_pain_any",
+      "urgency": "urgent",
+      "when": "chest_pain",
+      "reason": "Any chest pain needs same-day medical assessment."
+    }
+  ],
+  "default_urgency": "urgent",
+  "warning_signs": [
+    "Pain spreading to arm or jaw",
+    "Sweating",
+    "Difficulty breathing",
+    "Fainting"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}

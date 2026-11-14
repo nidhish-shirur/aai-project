@@ -1,0 +1,188 @@
+{
+  "id": "headache",
+  "title": "Headache",
+  "triggers": [
+    "headache",
+    "head ache",
+    "migraine",
+    "sar dard",
+    "sir dard"
+  ],
+  "fields": [
+    {
+      "key": "thunderclap",
+      "type": "bool",
+      "required": true,
+      "question": "Did it start suddenly, reaching full strength within a minute - the worst headache of your life?",
+      "description": "Did it start suddenly, reaching full strength within a minute - the worst headache of your life?"
+    },
+    {
+      "key": "neuro_deficit",
+      "type": "bool",
+      "required": true,
+      "question": "Any sudden weakness or numbness on one side, face drooping, trouble speaking, or sudden vision loss?",
+      "description": "Any sudden weakness or numbness on one side, face drooping, trouble speaking, or sudden vision loss?"
+    },
+    {
+      "key": "stiff_neck",
+      "type": "bool",
+      "required": true,
+      "question": "Any stiff neck?",
+      "description": "Any stiff neck?"
+    },
+    {
+      "key": "fever",
+      "type": "bool",
+      "required": true,
+      "question": "Any fever?",
+      "description": "Any fever?"
+    },
+    {
+      "key": "head_injury_recent",
+      "type": "bool",
+      "required": true,
+      "question": "Any blow to the head in the last few days?",
+      "description": "Any blow to the head in the last few days?"
+    },
+    {
+      "key": "confusion",
+      "type": "bool",
+      "required": true,
+      "question": "Any new confusion, unusual drowsiness or trouble staying awake?",
+      "description": "Any new confusion, unusual drowsiness or trouble staying awake?"
+    },
+    {
+      "key": "vomiting",
+      "type": "bool",
+      "required": true,
+      "question": "Any vomiting?",
+      "description": "Any vomiting?"
+    }
+  ],
+  "red_flags": [
+    {
+      "id": "headache_thunderclap",
+      "label": "Sudden, worst-ever headache",
+      "when": "thunderclap",
+      "category": "medical"
+    },
+    {
+      "id": "headache_fever_neck",
+      "label": "Headache with fever and stiff neck",
+      "when": {
+        "all": [
+          "fever",
+          "stiff_neck"
+        ]
+      },
+      "category": "medical"
+    },
+    {
+      "id": "headache_injury_confusion",
+      "label": "Head injury with confusion",
+      "when": {
+        "all": [
+          "head_injury_recent",
+          "confusion"
+        ]
+      },
+      "category": "medical"
+    }
+  ],
+  "rules": [
+    {
+      "id": "headache_head_injury",
+      "urgency": "urgent",
+      "when": "head_injury_recent",
+      "reason": "Headache after a head injury needs same-day assessment."
+    },
+    {
+      "id": "headache_confusion",
+      "urgency": "urgent",
+      "when": "confusion",
+      "reason": "New confusion with headache needs same-day assessment."
+    },
+    {
+      "id": "headache_vomit_severe",
+      "urgency": "urgent",
+      "when": {
+        "all": [
+          "vomiting",
+          [
+            "severity",
+            "==",
+            "severe"
+          ]
+        ]
+      },
+      "reason": "Severe headache with vomiting needs same-day assessment."
+    },
+    {
+      "id": "headache_fever",
+      "urgency": "moderate",
+      "when": "fever",
+      "reason": "Headache with fever should be reviewed by a doctor."
+    },
+    {
+      "id": "headache_severe",
+      "urgency": "moderate",
+      "when": [
+        "severity",
+        "==",
+        "severe"
+      ],
+      "reason": "A severe headache should be reviewed by a doctor."
+    },
+    {
+      "id": "headache_older",
+      "urgency": "moderate",
+      "when": [
+        "age_years",
+        ">=",
+        50
+      ],
+      "reason": "A new headache at age 50 or over should be reviewed by a doctor."
+    },
+    {
+      "id": "headache_week",
+      "urgency": "moderate",
+      "when": [
+        "duration_days",
+        ">=",
+        7
+      ],
+      "reason": "A headache lasting a week or more should be reviewed."
+    },
+    {
+      "id": "headache_moderate_3d",
+      "urgency": "moderate",
+      "when": {
+        "all": [
+          [
+            "severity",
+            "==",
+            "moderate"
+          ],
+          [
+            "duration_days",
+            ">=",
+            3
+          ]
+        ]
+      },
+      "reason": "A moderate headache lasting three days or more."
+    }
+  ],
+  "default_urgency": "low",
+  "warning_signs": [
+    "Sudden severe headache",
+    "Stiff neck with fever",
+    "Confusion or drowsiness",
+    "Weakness, numbness or trouble speaking",
+    "Vomiting"
+  ],
+  "min_urgency_if_incomplete": "moderate",
+  "source_notes": [
+    "Rules are student-authored from the general principles in public triage guidance (NHS emergency advice, ESI handbook, WHO emergency triage). Source clause references still to be added; NOT clinically validated."
+  ]
+}
