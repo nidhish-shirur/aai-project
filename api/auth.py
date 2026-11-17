@@ -17,6 +17,13 @@ if not config.SUPABASE_URL:
 if not config.SUPABASE_SECRET_KEY:
     raise RuntimeError("SUPABASE_SECRET_KEY is missing")
 
+if not config.SUPABASE_JWKS_URL:
+    raise RuntimeError("SUPABASE_JWKS_URL is missing")
+
+if not config.SUPABASE_JWT_ISSUER:
+    raise RuntimeError("SUPABASE_JWT_ISSUER is missing")
+
+
 supabase_admin: Client = create_client(
     config.SUPABASE_URL,
     config.SUPABASE_SECRET_KEY,
@@ -37,6 +44,15 @@ def verify_access_token(token: str) -> dict[str, Any]:
             algorithms=ALGORITHMS,
             audience="authenticated",
             issuer=config.SUPABASE_JWT_ISSUER,
+            options={
+                "require": [
+                    "exp",
+                    "iat",
+                    "sub",
+                    "aud",
+                    "iss",
+                ],
+            },
         )
     except jwt.PyJWTError as exc:
         raise HTTPException(
@@ -44,9 +60,19 @@ def verify_access_token(token: str) -> dict[str, Any]:
             detail="Invalid or expired access token",
         ) from exc
 
+    if payload.get("role") != "authenticated":
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid authentication role",
+        )
+
     user_id = payload.get("sub")
+
     if not isinstance(user_id, str) or not user_id:
-        raise HTTPException(status_code=401, detail="Token has no user ID")
+        raise HTTPException(
+            status_code=401,
+            detail="Token has no user ID",
+        )
 
     return payload
 
@@ -57,6 +83,7 @@ def get_profile(user_id: str) -> dict[str, Any]:
         .table("profiles")
         .select("user_id, display_name, role")
         .eq("user_id", user_id)
+        .limit(1)
         .execute()
     )
 

@@ -38,7 +38,7 @@ from engine.answer_parser import parse_answer
 from engine.protocols import Field_, get_protocol, missing_fields, select_protocol_from_text
 from engine.red_flags import check_red_flags, check_text
 from engine.triage_rules import compute_urgency
-from memory.db import Memory
+from memory.repository import Repository
 
 MAX_INPUT_CHARS = 2000
 MAX_QUESTION_CHARS = 240
@@ -86,7 +86,7 @@ def _utcnow() -> datetime:
 
 
 class TriageAgent:
-    def __init__(self, memory: Memory, llm: Optional[LLM] = None,
+    def __init__(self, memory: Repository, llm: Optional[LLM] = None,
                  clock: Callable[[], datetime] = _utcnow, max_questions: Optional[int] = None,
                  safety_review: bool = True):
         self.mem = memory

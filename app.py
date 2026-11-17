@@ -1,222 +1,605 @@
-"""TriageGuide web app (Streamlit): patient chat + clinician dashboard.
-
-Run from the project root:   streamlit run app.py
-Educational decision-support prototype. It never diagnoses and never recommends medicines.
-"""
 from __future__ import annotations
 
+import httpx
 import streamlit as st
+from supabase import create_client
 
 import config
-from agent.llm_client import get_llm
-from agent.orchestrator import TriageAgent
-from agent.summary import build_clinician_summary, format_tool_log, to_markdown
 from engine import pathways
-from engine.protocols import get_protocol
-from memory.db import Memory
-
-st.set_page_config(page_title="TriageGuide", page_icon="\U0001FA7A", layout="centered")
-
-URGENCY_STYLE = {"emergency": "error", "urgent": "warning", "moderate": "info", "low": "success"}
 
 
-@st.cache_resource
-def get_memory() -> Memory:
-    return Memory()
+st.set_page_config(
+    page_title="TriageGuide",
+    page_icon="\U0001FA7A",
+    layout="centered",
+)
+
+supabase_auth = create_client(
+    config.SUPABASE_URL,
+    config.SUPABASE_PUBLISHABLE_KEY,
+)
+
+URGENCY_STYLE = {
+    "emergency": "error",
+    "urgent": "warning",
+    "moderate": "info",
+    "low": "success",
+}
 
 
-def make_llm(use_llm: bool):
-    """(llm or None, message). Never raises: the app still works without an LLM."""
-    if not use_llm:
-        return None, "AI model switched off: fixed question order."
+def show_api_error(exc: Exception) -> None:
+    st.error(str(exc))
+
+
+def api_request(
+    method: str,
+    path: str,
+    payload: dict | None = None,
+) -> dict:
+    token = st.session_state.get("auth_token")
+
+    if not token:
+        raise RuntimeError("You must log in first.")
+
+    response = httpx.request(
+        method,
+        f"{config.API_URL}{path}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=30,
+    )
+
+    if response.status_code >= 400:
+        try:
+            detail = response.json().get(
+                "detail",
+                response.text,
+            )
+        except ValueError:
+            detail = response.text
+
+        raise RuntimeError(
+            f"API error {response.status_code}: {detail}"
+        )
+
+    return response.json()
+
+
+def api_request_bytes(
+    method: str,
+    path: str,
+) -> tuple[bytes, str]:
+    token = st.session_state.get("auth_token")
+
+    if not token:
+        raise RuntimeError("You must log in first.")
+
+    response = httpx.request(
+        method,
+        f"{config.API_URL}{path}",
+        headers={
+            "Authorization": f"Bearer {token}",
+        },
+        timeout=30,
+    )
+
+    if response.status_code >= 400:
+        raise RuntimeError(
+            f"API error {response.status_code}: "
+            f"{response.text}"
+        )
+
+    return (
+        response.content,
+        response.headers.get(
+            "content-type",
+            "text/plain",
+        ),
+    )
+
+
+def load_current_user() -> dict:
+    return api_request("GET", "/auth/me")
+
+
+def clear_session() -> None:
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+
+
+def auth_page() -> None:
+    st.title("\U0001FA7A TriageGuide")
+    st.caption(
+        "Please log in or create a patient account to continue."
+    )
+
+    mode = st.radio(
+        "Account action",
+        ["Log in", "Create patient account"],
+        horizontal=True,
+    )
+
+    email = st.text_input("Email")
+    password = st.text_input(
+        "Password",
+        type="password",
+    )
+
+    display_name = ""
+
+    if mode == "Create patient account":
+        display_name = st.text_input("Display name")
+
+    if st.button(mode, type="primary"):
+        if not email or not password:
+            st.error(
+                "Email and password are required."
+            )
+            return
+
+        try:
+            if mode == "Log in":
+                response = (
+                    supabase_auth.auth.sign_in_with_password({
+                        "email": email,
+                        "password": password,
+                    })
+                )
+            else:
+                response = supabase_auth.auth.sign_up({
+                    "email": email,
+                    "password": password,
+                    "options": {
+                        "data": {
+                            "display_name": display_name,
+                        },
+                    },
+                })
+
+            if response.session is None:
+                st.success(
+                    "Account created. Check your email, "
+                    "confirm it, then log in."
+                )
+                return
+
+            st.session_state.auth_token = (
+                response.session.access_token
+            )
+            st.session_state.auth_user = response.user
+            st.session_state.app_user = load_current_user()
+
+            st.rerun()
+
+        except Exception as exc:
+            st.error(
+                f"Authentication failed: {exc}"
+            )
+
+
+def logout() -> None:
     try:
-        return get_llm(), ""
-    except Exception as exc:
-        return None, f"AI model unavailable ({exc}). Using the fixed question order."
+        supabase_auth.auth.sign_out()
+    finally:
+        clear_session()
+        st.rerun()
 
 
 def banner(urgency: str, text: str) -> None:
-    getattr(st, URGENCY_STYLE.get(urgency, "info"))(text)
+    getattr(
+        st,
+        URGENCY_STYLE.get(urgency, "info"),
+    )(text)
 
 
-# ======================================================================= patient page
-def start_form() -> None:
+def start_assessment() -> None:
     st.title("\U0001FA7A TriageGuide")
     st.caption(pathways.disclaimer())
-    st.warning(f"If this is an emergency, call {config.EMERGENCY_NUMBER} now.")
-    code = st.text_input("Patient code from an earlier visit (optional)", placeholder="P-XXXXXX").strip().upper()
-    has_key = bool(config.GROQ_API_KEY) or config.LLM_PROVIDER == "gemini"
-    use_llm = st.checkbox("Use the AI model for questions", value=has_key,
-                          help="Off = fixed question order (works without internet or a key).")
-    if st.button("Start assessment", type="primary"):
-        mem = get_memory()
-        llm, note = make_llm(use_llm)
-        agent = TriageAgent(mem, llm)
-        notice = note
+    st.warning(
+        f"If this is an emergency, call "
+        f"{config.EMERGENCY_NUMBER} now."
+    )
+
+    if st.button(
+        "Start assessment",
+        type="primary",
+    ):
         try:
-            turn = agent.start(code or None)
-        except KeyError:
-            turn = agent.start(None)
-            notice = (notice + " " if notice else "") + "That patient code was not found, so a new record was started."
-        st.session_state.agent = agent
-        st.session_state.transcript = [{"role": "assistant", "text": turn.message, "kind": turn.kind}]
-        st.session_state.notice = notice
+            result = api_request(
+                "POST",
+                "/patient/assessments",
+            )
+        except Exception as exc:
+            show_api_error(exc)
+            return
+
+        st.session_state.session_id = result["session_id"]
+        st.session_state.patient_code = result["patient_code"]
+        st.session_state.transcript = [{
+            "role": "assistant",
+            "text": result["message"],
+            "kind": result["kind"],
+        }]
         st.session_state.final = None
         st.rerun()
 
 
-def show_result(turn) -> None:
-    report = turn.result
-    if turn.kind == "emergency":
-        st.error(turn.message)
+def show_result(result: dict) -> None:
+    report = result.get("result") or {}
+
+    if result.get("kind") == "emergency":
+        st.error(result["message"])
         return
-    banner(turn.urgency, f"**{report['urgency'].upper()}**: "
-                         f"{pathways.describe(turn.urgency)['pathway']} ({pathways.describe(turn.urgency)['timeframe']})")
-    if turn.refusal:
-        st.info(turn.refusal)
-    st.write(pathways.describe(turn.urgency)["advice"])
-    st.caption(f"Confidence: {report['confidence']}")
+
+    urgency = result.get("urgency")
+
+    if not urgency:
+        st.info(result["message"])
+        return
+
+    details = pathways.describe(urgency)
+
+    banner(
+        urgency,
+        f"**{urgency.upper()}**: "
+        f"{details['pathway']} "
+        f"({details['timeframe']})",
+    )
+
+    if result.get("refusal"):
+        st.info(result["refusal"])
+
+    st.write(details["advice"])
+
+    if not report:
+        return
+
+    st.caption(
+        f"Confidence: "
+        f"{report.get('confidence', 'unknown')}"
+    )
+
     st.markdown("**Why this level**")
-    for reason in report["reasons"]:
+
+    for reason in report.get("reasons", []):
         st.markdown(f"- {reason}")
-    protocol = get_protocol(report["protocol_id"])
-    st.markdown("**Seek help sooner if you notice**")
-    for sign in protocol.warning_signs:
-        st.markdown(f"- {sign}")
-    if report["needs_clinician_review"]:
-        st.warning(pathways.clinician_review_note())
+
+    if report.get("needs_clinician_review"):
+        st.warning(
+            pathways.clinician_review_note()
+        )
+
+    tool_log = report.get("tool_log", [])
+
+    if tool_log:
+        with st.expander(
+            "How did the assistant decide?"
+        ):
+            st.json(tool_log)
+
+    latency = report.get("latency")
+
+    if latency:
+        with st.expander("Response timing"):
+            st.json(latency)
+
+
+def show_patient_download() -> None:
+    try:
+        report_bytes, report_type = api_request_bytes(
+            "GET",
+            (
+                "/patient/assessments/"
+                f"{st.session_state.session_id}/download"
+            ),
+        )
+
+        st.download_button(
+            "Download summary for your doctor",
+            data=report_bytes,
+            file_name="triage-summary.txt",
+            mime=report_type,
+        )
+    except Exception as exc:
+        show_api_error(exc)
 
 
 def patient_page() -> None:
-    if "agent" not in st.session_state:
-        start_form()
+    if "session_id" not in st.session_state:
+        start_assessment()
         return
-    agent: TriageAgent = st.session_state.agent
-    mem = get_memory()
+
     st.title("\U0001FA7A TriageGuide")
-    if st.session_state.get("notice"):
-        st.caption(st.session_state.notice)
 
-    for m in st.session_state.transcript:
-        with st.chat_message(m["role"]):
-            if m["role"] == "user":
-                st.text(m["text"])          # plain text: patient input is never rendered as markdown
-            elif m["kind"] == "emergency":
-                st.error(m["text"])
+    for message in st.session_state.get(
+        "transcript",
+        [],
+    ):
+        with st.chat_message(message["role"]):
+            if message["role"] == "user":
+                st.text(message["text"])
             else:
-                st.write(m["text"])
+                st.write(message["text"])
 
-    if agent.done:
-        final = st.session_state.final
+    final = st.session_state.get("final")
+
+    if final:
         st.divider()
         show_result(final)
-        st.info(f"Your anonymous patient code: **{agent.state.patient_id}**. "
-                "Enter it next time so the system can remember this visit. No name or phone number is stored.")
-        summary = build_clinician_summary(agent.state, final.result, mem.timeline_text(agent.state.patient_id))
-        st.download_button("Download summary for your doctor", to_markdown(summary),
-                           file_name=f"triage_{agent.state.patient_id}.md", mime="text/markdown")
-        with st.expander("How did the assistant decide? (tool calls)"):
-            for line in format_tool_log(agent.tool_log):
-                st.text(line)
-        c1, c2 = st.columns(2)
-        if c1.button("Start a new assessment"):
-            for k in ("agent", "transcript", "final", "notice"):
-                st.session_state.pop(k, None)
-            st.rerun()
-        if c2.button("Delete my data"):
-            mem.delete_patient(agent.state.patient_id)
-            for k in ("agent", "transcript", "final", "notice"):
-                st.session_state.pop(k, None)
-            st.success("Your record and all linked sessions were deleted.")
+
+        if final.get("kind") != "emergency":
+            show_patient_download()
+
+        st.info(
+            "Your anonymous patient code: "
+            f"**{st.session_state.patient_code}**"
+        )
+
+        if st.button("Delete my data"):
+            try:
+                api_request(
+                    "DELETE",
+                    "/patient/me",
+                )
+                clear_session()
+                st.success(
+                    "Your account data was deleted."
+                )
+                st.rerun()
+            except Exception as exc:
+                show_api_error(exc)
+
         return
 
     text = st.chat_input("Type your answer...")
-    if text:
-        st.session_state.transcript.append({"role": "user", "text": text, "kind": "user"})
-        with st.spinner("Thinking..."):
-            turn = agent.handle(text)
-        if turn.done:
-            st.session_state.final = turn
-            st.session_state.transcript.append({"role": "assistant", "kind": turn.kind,
-                                                "text": turn.message if turn.kind == "emergency"
-                                                else "Thank you. Here is my assessment."})
-        else:
-            st.session_state.transcript.append({"role": "assistant", "text": turn.message, "kind": turn.kind})
-        st.rerun()
+
+    if not text:
+        return
+
+    st.session_state.transcript.append({
+        "role": "user",
+        "text": text,
+        "kind": "user",
+    })
+
+    try:
+        result = api_request(
+            "POST",
+            (
+                "/patient/assessments/"
+                f"{st.session_state.session_id}/messages"
+            ),
+            payload={"text": text},
+        )
+    except Exception as exc:
+        show_api_error(exc)
+        return
+
+    if result["done"]:
+        st.session_state.final = result
+        assistant_text = (
+            result["message"]
+            if result["kind"] == "emergency"
+            else (
+                "Thank you. Here is your assessment."
+            )
+        )
+    else:
+        assistant_text = result["message"]
+
+    st.session_state.transcript.append({
+        "role": "assistant",
+        "text": assistant_text,
+        "kind": result["kind"],
+    })
+
+    st.rerun()
 
 
-# ======================================================================= clinician dashboard
 def dashboard_page() -> None:
     st.title("Clinician dashboard")
-    if config.DASHBOARD_PIN:
-        if not st.session_state.get("pin_ok"):
-            pin = st.text_input("Dashboard PIN", type="password")
-            if pin and pin == config.DASHBOARD_PIN:
-                st.session_state.pin_ok = True
-                st.rerun()
-            elif pin:
-                st.error("Wrong PIN.")
-            return
-    else:
-        st.caption("No DASHBOARD_PIN is set: anyone who can open this page can see all sessions (OK for a local demo only).")
 
-    mem = get_memory()
-    sessions = mem.list_sessions(limit=200)
+    user = st.session_state.get(
+        "app_user",
+        {},
+    )
+
+    if user.get("role") not in {
+        "clinician",
+        "reviewer",
+        "admin",
+    }:
+        st.error("Clinician access required.")
+        return
+
+    try:
+        data = api_request(
+            "GET",
+            "/clinician/sessions",
+        )
+    except Exception as exc:
+        show_api_error(exc)
+        return
+
+    sessions = data.get("sessions", [])
+
     if not sessions:
-        st.info("No sessions yet. Run an assessment on the Patient page first.")
+        st.info("No sessions yet.")
         return
 
-    counts = {u: sum(1 for s in sessions if s["urgency"] == u) for u in ("emergency", "urgent", "moderate", "low")}
-    cols = st.columns(4)
-    for col, (name, n) in zip(cols, counts.items()):
-        col.metric(name.capitalize(), n)
+    counts = {
+        urgency: sum(
+            1
+            for session in sessions
+            if session.get("urgency") == urgency
+        )
+        for urgency in (
+            "emergency",
+            "urgent",
+            "moderate",
+            "low",
+        )
+    }
 
-    only_open = st.checkbox("Only show sessions that recommend clinician review")
-    show_unfinished = st.checkbox("Also show unfinished sessions", value=False)
-    rows = []
-    for s in sessions:
-        report = mem.get_report(s["session_id"]) or {}
-        if not report and not show_unfinished:
-            continue
-        if only_open and not report.get("needs_clinician_review"):
-            continue
-        rows.append({"urgency": s["urgency"] or "(unfinished)", "patient": s["patient_id"],
-                     "complaint": s["complaint"] or "", "review": "yes" if report.get("needs_clinician_review") else "",
-                     "when": s["created_at"][:16].replace("T", " "), "session": s["session_id"]})
-    if not rows:
-        st.info("No finished assessments match. Tick \"Also show unfinished sessions\" to see the rest.")
+    columns = st.columns(4)
+
+    for column, (name, count) in zip(
+        columns,
+        counts.items(),
+    ):
+        column.metric(
+            name.capitalize(),
+            count,
+        )
+
+    rows = [
+        {
+            "urgency": (
+                session.get("urgency")
+                or "(unfinished)"
+            ),
+            "patient": (
+                session.get("patient_id")
+                or ""
+            ),
+            "complaint": (
+                session.get("complaint")
+                or ""
+            ),
+            "session": (
+                session.get("session_id")
+                or ""
+            ),
+        }
+        for session in sessions
+    ]
+
+    st.dataframe(
+        rows,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    session_ids = [
+        row["session"]
+        for row in rows
+        if row["session"]
+    ]
+
+    if not session_ids:
         return
-    st.dataframe(rows, use_container_width=True, hide_index=True)
 
-    chosen = st.selectbox("Open a session", [r["session"] for r in rows],
-                          format_func=lambda sid: next(f"{r['urgency']} | {r['patient']} | {r['complaint']} | {r['when']}"
-                                                       for r in rows if r["session"] == sid))
-    state = mem.load_state(chosen)
-    report = mem.get_report(chosen)
-    summary = build_clinician_summary(
-        state, report, mem.timeline_text(state.patient_id),
-        mem.continuity_note(state.patient_id, exclude_session_id=chosen))
-    if summary["urgency"]:
-        banner(summary["urgency"], f"**{summary['urgency_label']}**: {summary['suggested_care']} ({summary['timeframe']})")
-    st.markdown(to_markdown(summary, base_level=3))
-    st.download_button("Download this summary", to_markdown(summary), file_name=f"triage_{chosen}.md",
-                       mime="text/markdown")
-    if report and report.get("tool_log"):
-        with st.expander("Agent decision trace"):
-            for line in format_tool_log(report["tool_log"]):
-                st.text(line)
-        if report.get("latency"):
-            with st.expander("LLM latency for this session"):
-                st.json(report["latency"])
-    if st.button("Delete this patient's data (all sessions)"):
-        mem.delete_patient(state.patient_id)
-        st.success("Deleted.")
+    selected = st.selectbox(
+        "Open a session",
+        session_ids,
+    )
+
+    try:
+        data = api_request(
+            "GET",
+            f"/clinician/sessions/{selected}",
+        )
+    except Exception as exc:
+        show_api_error(exc)
+        return
+
+    summary = data.get("summary") or {}
+
+    if summary.get("urgency"):
+        banner(
+            summary["urgency"],
+            f"**{summary['urgency_label']}**: "
+            f"{summary['suggested_care']} "
+            f"({summary['timeframe']})",
+        )
+
+    st.json(summary)
+
+    if data.get("timeline"):
+        with st.expander("Symptom timeline"):
+            st.write(data["timeline"])
+
+    if data.get("continuity"):
+        with st.expander("Continuity note"):
+            st.write(data["continuity"])
+
+    report = data.get("report") or {}
+
+    if report.get("tool_log"):
+        with st.expander("Decision trace"):
+            st.json(report["tool_log"])
+
+    if report.get("latency"):
+        with st.expander("LLM latency"):
+            st.json(report["latency"])
+
+    if st.button("Delete this patient's data"):
+        try:
+            patient_code = summary.get("patient_code")
+
+            if not patient_code:
+                st.error(
+                    "Patient code is unavailable."
+                )
+                return
+
+            api_request(
+                "DELETE",
+                (
+                    "/clinician/patients/"
+                    f"{patient_code}"
+                ),
+            )
+
+            st.success("Patient data deleted.")
+            st.rerun()
+
+        except Exception as exc:
+            show_api_error(exc)
+
+
+if "auth_token" not in st.session_state:
+    auth_page()
+    st.stop()
+
+if "app_user" not in st.session_state:
+    try:
+        st.session_state.app_user = (
+            load_current_user()
+        )
+    except Exception:
+        clear_session()
         st.rerun()
 
+st.sidebar.caption(
+    "Signed in as: "
+    f"{st.session_state.app_user.get('email', 'user')}"
+)
 
-# ======================================================================= main
-page = st.sidebar.radio("Page", ["Patient", "Clinician dashboard"])
-st.sidebar.caption("Educational prototype. Not a medical device. Never diagnoses.")
+if st.sidebar.button("Log out"):
+    logout()
+
+role = st.session_state.app_user.get("role")
+
+if role == "patient":
+    page = st.sidebar.radio(
+        "Page",
+        ["Patient"],
+    )
+else:
+    page = st.sidebar.radio(
+        "Page",
+        ["Clinician dashboard"],
+    )
+
+st.sidebar.caption(
+    "Educational prototype. "
+    "Not a medical device. Never diagnoses."
+)
+
 if page == "Patient":
     patient_page()
 else:

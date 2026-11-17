@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+import hashlib
+from datetime import timedelta
 import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -35,18 +36,22 @@ class SupabaseRepository:
 
     # ------------------------------------------------------------ helpers
 
-    def _patient(self, public_code: str) -> dict[str, Any]:
+        def _patient(self, public_code: str) -> dict[str, Any]:
         response = (
             self.client
             .table("patients")
-            .select("id, public_code, created_at")
+            .select(
+                "id, auth_user_id, public_code, created_at"
+            )
             .eq("public_code", public_code)
             .limit(1)
             .execute()
         )
 
         if not response.data:
-            raise KeyError(f"Unknown patient code: {public_code}")
+            raise KeyError(
+                f"Unknown patient code: {public_code}"
+            )
 
         return response.data[0]
 
@@ -92,31 +97,57 @@ class SupabaseRepository:
         )
         return bool(response.data)
 
-    def create_patient(self, now: Optional[datetime] = None) -> str:
+        def create_patient(
+        self,
+        user_id: str,
+        now: Optional[datetime] = None,
+    ) -> str:
+        existing = self._patient_for_user(user_id)
+
+        if existing is not None:
+            return existing["public_code"]
+
         response = (
             self.client
             .table("patients")
             .insert({
+                "auth_user_id": user_id,
                 "public_code": self._public_code(),
                 "created_at": iso(now or utcnow()),
             })
             .execute()
         )
+
+        if not response.data:
+            raise RuntimeError("Unable to create patient record")
+
         return response.data[0]["public_code"]
 
-    def start_session(
+        def start_session(
         self,
         patient_id: Optional[str] = None,
         now: Optional[datetime] = None,
+        user_id: Optional[str] = None,
     ) -> PatientState:
         now = now or utcnow()
 
+        if user_id is None:
+            raise ValueError(
+                "Supabase sessions require user_id"
+            )
+
         if patient_id is None:
-            patient_id = self.create_patient(now)
+            patient_id = self.create_patient(user_id, now)
 
         patient = self._patient(patient_id)
 
+        if patient.get("auth_user_id") != user_id:
+            raise PermissionError(
+                "Patient does not belong to this user"
+            )
+
         session_id = str(uuid.uuid4())
+
         state = PatientState(
             session_id=session_id,
             patient_id=patient["public_code"],
@@ -129,6 +160,7 @@ class SupabaseRepository:
             "updated_at": iso(now),
             "status": "active",
             "state": state.model_dump(mode="json"),
+            "agent_runtime": {},
         }).execute()
 
         return state
@@ -542,3 +574,200 @@ class SupabaseRepository:
             ).execute()
 
         return len(response.data)
+
+
+        # ------------------------------------------------------------ runtime state
+
+    def save_runtime(
+        self,
+        session_id: str,
+        runtime: dict[str, Any],
+    ) -> None:
+        self._session(session_id)
+
+        self.client.table("sessions").update({
+            "agent_runtime": runtime,
+            "updated_at": iso(utcnow()),
+        }).eq("id", session_id).execute()
+
+    def get_runtime(self, session_id: str) -> dict[str, Any]:
+        row = self._session(session_id)
+        return row.get("agent_runtime") or {}
+
+    # ------------------------------------------------------------ patient tokens
+
+    @staticmethod
+    def _hash_token(token: str) -> str:
+        return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    def issue_patient_token(
+        self,
+        patient_code: str,
+        days: int = 30,
+    ) -> str:
+        patient = self._patient(patient_code)
+        raw_token = secrets.token_urlsafe(32)
+        expires = utcnow() + timedelta(days=days)
+
+        self.client.table("patient_access_tokens").insert({
+            "patient_id": patient["id"],
+            "token_hash": self._hash_token(raw_token),
+            "expires_at": iso(expires),
+        }).execute()
+
+        return raw_token
+
+    def verify_patient_token(
+        self,
+        patient_code: str,
+        raw_token: str,
+    ) -> bool:
+        patient = self._patient(patient_code)
+
+        response = (
+            self.client
+            .table("patient_access_tokens")
+            .select("id, expires_at, revoked_at")
+            .eq("patient_id", patient["id"])
+            .eq("token_hash", self._hash_token(raw_token))
+            .limit(1)
+            .execute()
+        )
+
+        if not response.data:
+            return False
+
+        token = response.data[0]
+
+        if token.get("revoked_at"):
+            return False
+
+        return parse_datetime(token["expires_at"]) > utcnow()
+
+    def verify_session_token(
+        self,
+        session_id: str,
+        raw_token: str,
+    ) -> bool:
+        session = self._session(session_id)
+
+        patient_response = (
+            self.client
+            .table("patients")
+            .select("public_code")
+            .eq("id", session["patient_id"])
+            .limit(1)
+            .execute()
+        )
+
+        if not patient_response.data:
+            return False
+
+        return self.verify_patient_token(
+            patient_response.data[0]["public_code"],
+            raw_token,
+        )
+
+    # ------------------------------------------------------------ audit
+
+    def audit(
+        self,
+        action: str,
+        entity_type: str,
+        entity_id: str | None = None,
+        actor_user_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
+        self.client.table("audit_logs").insert({
+            "actor_user_id": actor_user_id,
+            "action": action,
+            "entity_type": entity_type,
+            "entity_id": entity_id,
+            "metadata": metadata or {},
+        }).execute()
+
+    def _patient_for_user(self, user_id: str) -> dict[str, Any] | None:
+        response = (
+            self.client
+            .table("patients")
+            .select("id, public_code, auth_user_id")
+            .eq("auth_user_id", user_id)
+            .limit(1)
+            .execute()
+        )
+        return response.data[0] if response.data else None
+
+    def start_user_session(
+        self,
+        user_id: str,
+        now: Optional[datetime] = None,
+    ) -> PatientState:
+        now = now or utcnow()
+        patient = self._patient_for_user(user_id)
+
+        if patient is None:
+            code = self._public_code()
+
+            response = (
+                self.client
+                .table("patients")
+                .insert({
+                    "public_code": code,
+                    "auth_user_id": user_id,
+                    "created_at": iso(now),
+                })
+                .execute()
+            )
+
+            patient = response.data[0]
+
+        session_id = str(uuid.uuid4())
+
+        state = PatientState(
+            session_id=session_id,
+            patient_id=patient["public_code"],
+        )
+
+        self.client.table("sessions").insert({
+            "id": session_id,
+            "patient_id": patient["id"],
+            "created_at": iso(now),
+            "updated_at": iso(now),
+            "status": "active",
+            "state": state.model_dump(mode="json"),
+        }).execute()
+
+        return state
+
+    def session_belongs_to_user(
+        self,
+        session_id: str,
+        user_id: str,
+    ) -> bool:
+        patient = self._patient_for_user(user_id)
+
+        if patient is None:
+            return False
+
+        response = (
+            self.client
+            .table("sessions")
+            .select("id")
+            .eq("id", session_id)
+            .eq("patient_id", patient["id"])
+            .limit(1)
+            .execute()
+        )
+
+        return bool(response.data)
+
+    def delete_user_patient(self, user_id: str) -> None:
+        patient = self._patient_for_user(user_id)
+
+        if patient is None:
+            return
+
+        self.client.table("patients").delete().eq(
+            "id",
+            patient["id"],
+        ).execute()
