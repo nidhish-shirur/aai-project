@@ -7,3 +7,9 @@ pytest>=7.4.0
 streamlit>=1.63.0
 # google-generativeai   (only if you want the Gemini fallback)
 # fpdf2                 (optional PDF export)
+fastapi
+uvicorn[standard]
+supabase
+PyJWT[crypto]
+httpx
+python-multipart

@@ -34,3 +34,9 @@ LLM_TIMEOUT_S = float(os.getenv("LLM_TIMEOUT_S", "12"))
 
 # Optional PIN for the clinician dashboard in the web app. Empty = no PIN (fine for a local demo only).
 DASHBOARD_PIN = os.getenv("DASHBOARD_PIN", "")
+
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_PUBLISHABLE_KEY = os.getenv("SUPABASE_PUBLISHABLE_KEY", "")
+SUPABASE_SECRET_KEY = os.getenv("SUPABASE_SECRET_KEY", "")
+SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL", "")
+SUPABASE_JWT_ISSUER = os.getenv("SUPABASE_JWT_ISSUER", "")
