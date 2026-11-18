@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from urllib.parse import quote
 import html
 import json
 
@@ -650,7 +650,7 @@ def render_workflow(diagram: str) -> None:
     </script>
     """
 
-    st.caption("🟩 executed   🟥 emergency   ⬜ not reached")
+    st.caption("🟩 executed   🟨 flagged for review   🟥 emergency   ⬜ not reached")
 
     components.html(
         workflow_html,
@@ -819,13 +819,24 @@ def dashboard_page() -> None:
 
         if submitted:
             try:
+                outcome = FEEDBACK_OPTIONS[choice]
+
+                payload = {
+                    "outcome": outcome,
+                    "comment": comment.strip() or None,
+                }
+
+                if outcome == "incorrect_urgency":
+                    corrected = st.selectbox(
+                        "Correct urgency",
+                        ["low", "moderate", "urgent", "emergency"],
+                    )
+                    payload["corrected_urgency"] = corrected
+
                 api_request(
                     "POST",
                     f"/clinician/sessions/{selected}/feedback",
-                    payload={
-                        "outcome": FEEDBACK_OPTIONS[choice],
-                        "comment": comment.strip() or None,
-                    },
+                    payload=payload,
                 )
                 st.success("Feedback saved.")
             except Exception as exc:
