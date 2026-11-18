@@ -1,267 +1,1287 @@
-# TriageGuide - Phases 0 to 7 (setup, knowledge base, LLM extractor, memory, safety core, agent, guardrails, web app)
+# TriageGuide
 
-Educational decision-support prototype. **Not a medical device. It never diagnoses.**
-Everything in this package runs on Windows with free tools. The safety core (Phase 4)
-needs **no API key and no internet**.
+TriageGuide is an educational healthcare decision-support application that collects patient symptoms, identifies safety concerns, applies deterministic triage rules, and suggests an appropriate care pathway.
 
-## Step-by-step on Windows with VS Code
+> **Important:** TriageGuide is not a medical device. It does not diagnose diseases, prescribe medication, or replace a qualified healthcare professional. The rules and protocols are educational and have not been clinically validated.
 
-### A. One-time installs
-1. Install **Python 3.11 or newer** from python.org. On the first installer screen tick **"Add python.exe to PATH"**.
-2. Install **VS Code** (code.visualstudio.com), then open it and install the **Python** extension (Microsoft) from the Extensions tab (Ctrl+Shift+X).
-3. (Optional) Install **Git for Windows**.
+---
 
-### B. Open the project
-4. Unzip `triageguide.zip` somewhere simple, for example `C:\Projects\triageguide`.
-5. In VS Code: **File > Open Folder** and choose the `triageguide` folder (the one that contains `config.py`).
-6. Open a terminal: **Terminal > New Terminal** (PowerShell).
+## Table of Contents
 
-### C. Create the environment (Phase 0)
-7. Create a virtual environment:
-   ```powershell
-   python -m venv .venv
-   ```
-8. Activate it:
-   ```powershell
-   .\.venv\Scripts\Activate.ps1
-   ```
-   If PowerShell says scripts are disabled, run once
-   `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` and activate again
-   (or use the "Command Prompt" terminal and run `.venv\Scripts\activate.bat`).
-   You should see `(.venv)` at the start of the prompt.
-9. Tell VS Code to use it: press **Ctrl+Shift+P**, type **Python: Select Interpreter**, pick the one inside `.venv`.
-10. Install the packages:
-    ```powershell
-    pip install -r requirements.txt
-    ```
+- [Overview](#overview)
+- [Features](#features)
+- [System Architecture](#system-architecture)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Environment Configuration](#environment-configuration)
+- [Running the Application](#running-the-application)
+- [Running the FastAPI Backend](#running-the-fastapi-backend)
+- [Supabase Setup](#supabase-setup)
+- [Command-Line Tools](#command-line-tools)
+- [Testing](#testing)
+- [Evaluation](#evaluation)
+- [Knowledge Base](#knowledge-base)
+- [Safety Design](#safety-design)
+- [Data Storage and Privacy](#data-storage-and-privacy)
+- [API Overview](#api-overview)
+- [Troubleshooting](#troubleshooting)
+- [Limitations](#limitations)
+- [Development Guidelines](#development-guidelines)
+- [License and Attribution](#license-and-attribution)
 
-### D. Connect the LLM (Phase 0 test)
-11. Get a free key at https://console.groq.com/keys .
-12. Create your settings file and open it:
-    ```powershell
-    copy .env.example .env
-    code .env
-    ```
-    Paste the key after `GROQ_API_KEY=` and save. Never share or commit `.env`.
-13. Test the connection:
-    ```powershell
-    python scripts/test_llm.py
-    ```
-    Expected: a short JSON reply and "Phase 0 complete". If it says the **model was not found**,
-    open https://console.groq.com/docs/models, copy a current model ID into `GROQ_MODEL` in `.env`, and retry.
-    (Phases 1 and 4 below do not need this step.)
+---
 
-### E. Knowledge base (Phase 1)
-14. Validate every protocol and rule:
-    ```powershell
-    python scripts/check_knowledge.py
-    ```
-    Expected: `Knowledge base OK.`
-15. Build the symptom vocabulary:
-    ```powershell
-    python data/prepare_vocab.py
-    ```
-    For the full vocabulary, download the Kaggle files (free account) from
-    https://www.kaggle.com/datasets/itachi9604/disease-symptom-description-dataset ,
-    create the folder `data\raw` and put `Symptom-severity.csv` and `dataset.csv` in it, then run the command again.
-    It also writes `data/dataset_report.txt` (row count and duplicate count of the Kaggle data).
+## Overview
 
-### F. Safety core (Phase 4)
-16. Run all tests (VS Code also shows them under the beaker icon):
-    ```powershell
-    python -m pytest -q
-    ```
-    Expected: all tests pass (411 at the time of writing).
-17. Run the vignette evaluation table:
-    ```powershell
-    python eval/run_vignettes.py
-    ```
-18. Try the engine by hand (no LLM needed):
-    ```powershell
-    python scripts/cli_fallback.py
-    ```
-    Type for example `my father has chest pain`, or `I have had a fever for three days`, and answer the questions.
-    Also try `python scripts/demo_engine.py`.
+TriageGuide combines deterministic clinical-style decision rules with optional language-model capabilities.
 
-### G. LLM extractor (Phase 2)
-19. Make sure `.env` has a working model (`GROQ_MODEL=openai/gpt-oss-120b` worked in testing).
-20. Run the live extractor check (needs your key):
-    ```powershell
-    python scripts/test_extractor.py
-    ```
-    It sends 8 sample messages (English, Hinglish, short answers like "not really") to the model and prints,
-    for each, what was **applied**, **rejected** and the time taken. A line starting with `!! LLM FAILED` means the
-    model call failed and the deterministic fallback was used. **Paste the whole output back to me** so I can tune the prompt.
-    The unit tests for this module use a scripted mock and need no key (`python -m pytest -q`).
+The system:
 
-### H. Memory and timeline (Phase 3)
-21. Run the demo (uses a throw-away database, so nothing is saved to your real one):
-    ```powershell
-    python scripts/demo_memory.py
-    ```
-    Expected: a continuity note ("7 day(s) ago: fever, assessed as moderate") and a two-line symptom timeline.
-22. Try it for real with the fallback chat. Finish one visit, **write down the patient code** it prints (like `P-3AC59E`),
-    then run `python scripts/cli_fallback.py` again and enter that code at the first prompt. It will remember the earlier visit.
-    Sessions are saved in `triageguide.db` in the project folder (ignored by Git). No name or phone number is ever stored.
+1. Receives a patient's free-text description.
+2. Checks the message for emergency red flags.
+3. Detects the patient's language.
+4. Extracts structured facts such as symptoms, duration, severity, age, pregnancy status, and risk factors.
+5. Validates extracted information using Python code.
+6. Asks follow-up questions based on the selected complaint protocol.
+7. Calculates an urgency level using deterministic rules.
+8. Optionally performs an escalation-only AI safety review.
+9. Produces a care pathway and a clinician-facing summary.
+10. Stores the assessment and symptom timeline for continuity.
 
-### I. The agent: chat with tool calling (Phase 5)
-23. Without an API key (deterministic mode, still goes through the agent):
-    ```powershell
-    python scripts/chat_cli.py --no-llm --trace
-    ```
-24. With the LLM (needs your Groq key in `.env`):
-    ```powershell
-    python scripts/chat_cli.py --trace
-    ```
-    Try: `I am a 30 year old man, fever for 3 days and a bad headache`. The agent should NOT ask your age,
-    sex or duration again. `--trace` prints every tool the agent used each turn (red_flag_gate, extract_facts,
-    plan_next, ask_question, compute_urgency) and the seconds per turn. **Paste a full conversation back to me**
-    (including the `[tool]` lines and `[time]`), so I can tune the planner prompt and check latency.
-    Also try: `my father has crushing chest pain` (emergency, zero LLM calls) and a second visit with your
-    patient code (the agent asks whether the earlier symptoms have gone away).
+The final urgency decision is controlled by deterministic Python rules. The language model cannot directly diagnose the patient or reduce a safety escalation.
 
-### J. Guardrails (Phase 6)
-25. Try the refusals in the chat: `python scripts/chat_cli.py --trace`, then type
-    `I have a fever for 2 days. what disease do I have?` The agent must answer with fixed text
-    ("I can't tell you what condition this might be...") and carry on asking triage questions.
-    `which tablet should I take?` gets the medicine refusal.
-26. Run the live adversarial check (needs your key):
-    ```powershell
-    python scripts/test_adversarial.py
-    ```
-    12 hostile or awkward messages (prompt injection, requests to diagnose, Hinglish, a child). Every line should say PASS.
-    If it says `Cannot reach the LLM` or a case says `LLM was unreachable`, the connection failed (a `403 Access denied` from Groq usually
-    means a VPN, college network or region block: try a phone hotspot) and that case is not a valid test.
-    **Paste the whole output back to me.**
+---
 
-### K. Latency log
-27. Run a normal conversation with the trace on: `python scripts/chat_cli.py --trace`.
-    Every turn now prints one `[llm]` line per model call (`extract`, `plan`, `review`) with its seconds, number of attempts,
-    `RATE-LIMITED` waits and output tokens, and a `[time]` line that splits the turn into time in the LLM and everything else.
-    At the end a **Latency summary** gives totals per purpose. The same numbers are stored in the report (`latency`).
-    **Paste one full conversation back to me.** It shows whether slow turns come from Groq's rate limits (look for `RATE-LIMITED`),
-    long model outputs (high token counts), or a slow connection (long seconds with 1 attempt).
+## Features
 
-    **Speed-ups from the first latency log:** (1) a bare answer such as `no`, `yes`, `101 F` or `none` to the question just asked is now
-    read by Python alone (trace shows `fast_path: True`, no `[llm] extract` line); anything longer still goes to the LLM, because it
-    may carry extra facts. (2) A model call slower than `LLM_TIMEOUT_S` (default 12 s, set in `.env`) is abandoned and the fixed fallback
-    is used for that step. (3) The Groq SDK's silent retries are switched off so the log shows every wait; the client does one quick retry for
-    a network blip or busy server (`transient_retries`) and handles rate limits itself.
+### Patient features
 
-### L. Web app and clinician summary (Phase 7)
-29. Install the new package (once): `pip install -r requirements.txt` (adds `streamlit`).
-30. Start the app:
-    ```powershell
-    streamlit run app.py
-    ```
-    A browser tab opens at http://localhost:8501.
-    * **Patient** page: tick or untick "Use the AI model" (unticked = fixed question order, no key or internet needed), press *Start assessment*
-      and chat. At the end you get the urgency card, a patient code, a **Download summary for your doctor** button, a
-      "How did the assistant decide?" panel (the tool calls) and *Delete my data*.
-    * **Clinician dashboard** page (left sidebar): urgency counts, a table sorted most-urgent first, the one-page summary of any session
-      (what the patient reports / denies / could not answer, why this urgency, red flags, AI second opinion, timeline, the patient's own words),
-      the decision trace, LLM latency, and delete. Unfinished sessions are hidden unless you tick the box.
-    * Optional: put `DASHBOARD_PIN=1234` in `.env` to require a PIN for the dashboard (a demo-grade lock, not real authentication).
-31. Take 2 screenshots (patient result and dashboard) for your report and demo slides.
+- Free-text symptom description
+- Deterministic or LLM-assisted questioning
+- Support for English, Hindi, Hinglish, and other languages
+- Emergency red-flag detection
+- Urgency classification:
+  - `low`
+  - `moderate`
+  - `urgent`
+  - `emergency`
+- Assessment progress indicator
+- Anonymous patient codes
+- Returning-patient continuity
+- Symptom timeline
+- Downloadable assessment summary
+- Data deletion
 
-### M. Evaluation (Phase 8)
-32. Offline run (no key, about 15 seconds): the rule-based system on 48 held-out cases plus five ablations.
-    ```powershell
-    python eval/run_eval.py
-    ```
-    Read `eval/results/RESULTS_latest.md`. `eval/results/FROZEN_v1_RESULTS.md` is the first run, recorded before any tuning.
-33. With your Groq key (adds the LLM-only baseline and the rules + AI review; about 100 calls, a few minutes):
-    ```powershell
-    python eval/run_eval.py --live --extraction --tag live1
-    ```
-    Optional, slow: add `--full` (complete agent with LLM on every case; use `--limit 10` first).
-34. Best practice: give `eval/review_sheet.csv` to a doctor or nurse to fill `clinician_label`, then
-    `python eval/run_eval.py --reviewed eval/review_sheet_filled.csv --tag clinician`.
-    The program refuses to run if `heldout_cases.json` was edited after its checksum was recorded.
-    Do not edit labels after seeing results.
+### Clinician features
 
-### N. Save your work (optional)
-35. ```powershell
-    git init
-    git add .
-    git commit -m "Phases 0 to 8"
-    ```
-    `.gitignore` already keeps `.env`, `.venv` and the database out of Git.
+- Clinician dashboard with urgency counts
+- Session list and session selector
+- Patient assessment summaries
+- Reported, denied, and unknown symptoms
+- Red-flag information
+- Suggested care pathway
+- Explainability panel (confidence, reasons, clinician-review flag)
+- Decision trace
+- LangGraph workflow visualization that highlights the path each session took
+- LLM latency information
+- PDF report generation
+- Clinician feedback:
+  - Correct
+  - Needs review
+  - Incorrect urgency
 
-## What each file is for
+### Engineering and evaluation features
 
-| File | Purpose |
+- Deterministic safety gate
+- Protocol-based questioning
+- LLM extraction with validation
+- Output guardrails
+- Circuit breaker for repeated model failures
+- SQLite local persistence
+- Supabase persistence for the authenticated API
+- FastAPI backend
+- Streamlit interface
+- Offline test suite
+- Held-out evaluation cases
+- Ablation testing
+- Adversarial prompt testing
+- Latency reporting
+
+---
+
+## System Architecture
+
+```text
+Patient message
+      |
+      v
+Language detection
+      |
+      v
+Deterministic text red-flag gate
+      |
+      +---- Emergency detected ----> Emergency guidance
+      |
+      v
+Language agent (LLM)
+      |
+      v
+Fact extraction
+      |
+      v
+Fact validation and state update
+      |
+      v
+Fact-level red-flag detection
+      |
+      +---- Emergency detected ----> Emergency guidance
+      |
+      v
+Adaptive follow-up questioning
+      |
+      +---- Information missing ----> Wait for patient response
+      |
+      v
+Medical knowledge (protocol lookup)
+      |
+      v
+Deterministic urgency engine
+      |
+      v
+Optional AI safety review (escalation only)
+      |
+      v
+Clinician escalation check
+      |
+      v
+Care pathway and clinician summary
+      |
+      v
+SQLite or Supabase persistence
+```
+
+### Safety boundary
+
+The LLM is used for language-related tasks such as:
+
+- Extracting facts from free text
+- Detecting language
+- Generating a follow-up question
+- Providing an escalation-only second opinion
+
+The LLM is not trusted to:
+
+- Decide the final urgency level
+- Override deterministic emergency rules
+- Diagnose a condition
+- Recommend medication
+- Invent facts
+- Remove required safety questions
+
+---
+
+## Technology Stack
+
+- Python 3.11+
+- FastAPI
+- Uvicorn
+- Streamlit
+- LangGraph
+- Mermaid (workflow diagram rendering)
+- Pydantic
+- Groq API
+- Optional Google Gemini client
+- SQLite
+- Supabase and PostgreSQL
+- PyJWT
+- HTTPX
+- pytest
+- pandas
+- fpdf2
+
+---
+
+## Project Structure
+
+```text
+.
+├── agent/
+│   ├── extractor.py
+│   ├── guard.py
+│   ├── langgraph_workflow.py
+│   ├── llm_client.py
+│   ├── orchestrator.py
+│   ├── safety_review.py
+│   ├── state.py
+│   ├── summary.py
+│   └── workflow_visualization.py
+│
+├── api/
+│   ├── auth.py
+│   ├── dependencies.py
+│   ├── main.py
+│   ├── pdf_report.py
+│   ├── rate_limit.py
+│   └── schemas.py
+│
+├── data/
+│   ├── prepare_vocab.py
+│   ├── gold_vignettes.json
+│   ├── dataset_report.txt
+│   └── raw/
+│
+├── engine/
+│   ├── answer_parser.py
+│   ├── conditions.py
+│   ├── escalation.py
+│   ├── pathways.py
+│   ├── protocols.py
+│   ├── red_flags.py
+│   ├── triage_rules.py
+│   └── vocab.py
+│
+├── eval/
+│   ├── ablations.py
+│   ├── baselines.py
+│   ├── extraction_cases.json
+│   ├── extraction_eval.py
+│   ├── heldout_cases.json
+│   ├── latency_report.py
+│   ├── metrics.py
+│   ├── run_eval.py
+│   ├── run_vignettes.py
+│   └── vignette_runner.py
+│
+├── knowledge/
+│   ├── common.json
+│   ├── modifiers.json
+│   ├── pathways.json
+│   ├── red_flags.json
+│   ├── synonyms.json
+│   ├── symptom_vocab.csv
+│   └── protocols/
+│
+├── memory/
+│   ├── db.py
+│   ├── repository.py
+│   ├── supabase_repository.py
+│   └── timeline.py
+│
+├── scripts/
+│   ├── chat_cli.py
+│   ├── check_knowledge.py
+│   ├── cli_fallback.py
+│   ├── demo_engine.py
+│   ├── demo_memory.py
+│   ├── migrate_sqlite_to_supabase.py
+│   ├── test_adversarial.py
+│   ├── test_extractor.py
+│   └── test_llm.py
+│
+├── supabase/
+│   └── migrations/
+│       └── 001_initial_schema.sql
+│
+├── tests/
+├── app.py
+├── config.py
+├── requirements.txt
+├── pytest.ini
+└── README.md
+```
+
+### Important modules
+
+| Module | Responsibility |
 |---|---|
-| `agent/orchestrator.py` | **The agent**: per turn it runs tools (red-flag gate, extractor, planner, rules engine). The LLM plans questions; Python validates the plan and decides urgency |
-| `app.py` | **Streamlit web app**: patient chat + clinician dashboard (PIN optional) |
-| `agent/summary.py` | **Clinician summary**: built by plain Python from the validated record (no LLM can add anything); text is escaped so patient words cannot inject Markdown or links |
-| `agent/guard.py` | **Output guard**: rejects LLM-written text with diagnosis or medicine language; detects patient requests for a diagnosis or medicine |
-| `agent/safety_review.py` | **Escalate-only LLM second opinion**: may raise urgency (capped at *urgent*), never lower it; its sentence is guarded |
-| `agent/llm_client.py` | Provider-independent LLM wrapper (Groq; optional untested Gemini; `MockLLM` for tests) |
-| `agent/extractor.py` | **LLM extractor**: free text to facts. The LLM proposes, Python validates (types, ranges, quoted denials) with a no-LLM fallback |
-| `memory/db.py` | **SQLite memory**: sessions, messages, reports, anonymous patient codes, continuity note, delete/purge for privacy |
-| `memory/timeline.py` | Builds the symptom timeline ("Day 1: Fever, Day 4: Fever + Cough") |
-| `config.py` | Paths and settings from `.env` (keys, model names, emergency number) |
-| `agent/state.py` | `PatientState`: everything known about the patient this session (True / False / unknown) |
-| `engine/conditions.py` | Small safe condition language used inside the JSON rules (no `eval`) |
-| `engine/protocols.py` | Loads protocols, decides what is still worth asking, selects a protocol from keywords |
-| `engine/red_flags.py` | **Deterministic emergency gate** (words + facts, handles "no chest pain") |
-| `engine/triage_rules.py` | **Urgency engine**: red flags, rules, risk modifier, cautious floor, escalate-only merge |
-| `engine/escalation.py` | When a human clinician must review (missing data, conflicts, children, pregnancy...) |
-| `engine/pathways.py` | Urgency level to care pathway and all user-facing text (from JSON) |
-| `engine/answer_parser.py` | Turns "yes", "101 F", "2 weeks", "sugar and bp" into typed values |
-| `engine/vocab.py` | Maps free text ("pet dard") to canonical symptoms (`abdominal_pain`) |
-| `knowledge/protocols/*.json` | 11 complaint protocols: fields, red flags, rules, warning signs |
-| `knowledge/red_flags.json` | Global red flags and the list of safety facts |
-| `knowledge/common.json`, `modifiers.json`, `pathways.json`, `synonyms.json` | Shared fields, risk modifiers, wording, synonyms |
-| `data/prepare_vocab.py` | Builds `knowledge/symptom_vocab.csv` (uses Kaggle for symptom names only) |
-| `data/gold_vignettes.json` | 34 development vignettes (9 emergency, 9 urgent, 8 moderate, 8 low) |
-| `eval/vignette_runner.py`, `run_vignettes.py` | Dev-set smoke test (circular: written by the same author as the rules) |
-| `eval/heldout_cases.json` (+ `.sha256`) | 48 held-out cases with frozen, AI-drafted labels (not clinician-verified) |
-| `eval/run_eval.py` | Evaluation runner: main comparison, ablations, per-group table, failure analysis |
-| `eval/metrics.py`, `sim_patient.py`, `ablations.py`, `baselines.py` | Metrics, simulated patient, component switch-offs, LLM-only baseline |
-| `eval/extraction_cases.json`, `extraction_eval.py` | 30 annotated messages for extractor accuracy |
-| `eval/latency_report.py`, `export_review_sheet.py` | Latency stats from saved sessions; blind sheet for a clinician |
-| `scripts/test_adversarial.py` | Live check: 12 hostile messages against the real LLM |
-| `scripts/chat_cli.py` | Terminal chat with the agent (`--trace` shows tool calls) |
-| `scripts/*.py` | LLM test, live extractor test, knowledge checker, fallback chat, demos |
-| `tests/` | pytest suite (red flags, rules, parser, knowledge, vignettes) |
+| `app.py` | Streamlit patient interface and clinician dashboard |
+| `api/main.py` | FastAPI routes and backend application |
+| `agent/langgraph_workflow.py` | LangGraph workflow orchestration |
+| `agent/workflow_visualization.py` | Mermaid workflow diagram and executed-path highlighting |
+| `agent/extractor.py` | Extracts structured facts from patient text |
+| `agent/guard.py` | Rejects unsafe generated content |
+| `agent/safety_review.py` | Escalation-only AI review |
+| `agent/summary.py` | Creates deterministic clinician summaries |
+| `engine/red_flags.py` | Detects emergency symptoms |
+| `engine/triage_rules.py` | Computes urgency |
+| `engine/protocols.py` | Loads and applies complaint protocols |
+| `engine/pathways.py` | Provides care recommendations and urgency text |
+| `memory/db.py` | Local SQLite persistence |
+| `memory/supabase_repository.py` | Supabase persistence |
+| `knowledge/protocols/` | Complaint-specific questions and rules |
+| `tests/` | Automated tests |
+| `eval/` | Evaluation and benchmarking tools |
 
-## Important honesty notes
-* **Timeline:** a returning patient is asked whether earlier symptoms have gone away. "Yes" marks them resolved **on the date they told us**,
-  not the (unknown) real date, so the timeline may show an old symptom as active a little longer than it really was.
-  Symptoms other than the main complaint are dated when first reported, not when they began.
-* **Phase 7 notes:** the clinician summary is deterministic on purpose: a doctor must be able to trust that every line comes from the record.
-  The dashboard PIN is a demo lock, not authentication; real use would need accounts, HTTPS and an audit log. The patient's typed words are
-  shown as plain text in the chat and escaped in the summary (a typed `![x](http://...)` would otherwise make the clinician's browser contact
-  that address). The app has headless tests (Streamlit's `AppTest`): they use a temporary database and never call an LLM.
-  A returning patient can type their code on the start page; closing the browser tab mid-chat loses the live conversation (state up to the last answer is saved).
-* **Phase 6 safety design:** the LLM writes only question wording and one review sentence; both pass `agent/guard.py` or are replaced by
-  fixed JSON wording. Refusals of "what disease do I have?" / "which medicine?" are fixed text, never LLM output. The second-opinion
-  review can only raise urgency, never to *emergency* (that stays with the deterministic gate), and every raise adds a clinician-review flag.
-  The guard is regex, so it is conservative and can miss paraphrases; that is why the safety-critical text is fixed, not generated.
-  The unit tests include mutation checks done by hand (disabling each protection makes a test fail). Prompt-injection tests are
-  scripted, so run `scripts/test_adversarial.py` for the real model.
-  After 3 failed LLM calls in a row the agent stops calling it (circuit breaker) and continues in deterministic mode until a call works again.
-  The review adds one more LLM call at the end of a conversation (about 1 to 2 s).
-* **Phase 5 safety design:** the emergency gate runs on the patient's words before any LLM call; the LLM's plan is validated
-  (it cannot stop while required questions remain, invent fields, ask optional questions first, or use diagnosis/medicine
-  wording in a question); a failing LLM falls back to the fixed question order; urgency is always decided by the rule engine.
-  Each turn can use up to two LLM calls (extract + plan), so latency is not yet measured against the 4 s target: the live run will tell.
-  An agent object lives in memory; a closed app cannot yet resume a half-finished conversation (state is saved, resuming is not built).
-* **Phase 2 safety rule:** the extractor stores the raw message before calling the LLM, so the red-flag gate still works if the LLM fails.
-  A denial ("no") is only accepted if the model quotes the patient's own words; a "yes" is always kept. The complaint is set once and not
-  switched later (a limitation: one protocol per session; Phase 5 will handle a second complaint).
-* The Gemini client is written from the public API format and is **untested**.
-* **The rules are not clinically validated.** They are student-written from general public guidance.
-  Have a doctor or faculty reviewer check `knowledge/` and record who reviewed it and when.
-  Add the source URL/clause to each protocol's `source_notes` as you verify it.
-* **The 34 vignettes were written together with the rules, so 100% agreement is a smoke test, not evidence of accuracy.**
-  For the final evaluation, write a *separate* held-out set (ideally labelled by someone who has not seen the rules)
-  and report that result.
-* Verify the helpline numbers in `knowledge/pathways.json` (112 emergency, Tele-MANAS 14416) before any demo.
-* `MAX_QUESTIONS` default is 15: fallback mode asks one field per question and some protocols have 11 required fields.
-  In LLM mode (Phase 2/5) one answer can fill several fields, so the plan's "about 4 to 7 questions" target stays realistic.
+---
 
-## Next phases
-Phase 9 (documentation, viva Q&A, demo script).
+## Requirements
+
+- Python 3.11 or newer
+- Git
+- Internet connection for installing dependencies
+- Windows, macOS, or Linux
+
+Optional requirements:
+
+- Groq API key for live LLM features
+- Supabase project for the authenticated API
+- Kaggle dataset files for rebuilding the symptom vocabulary
+
+---
+
+## Installation
+
+### Windows PowerShell
+
+```powershell
+git clone <repository-url>
+cd aai-project
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+If PowerShell prevents environment activation, run:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+Then activate the environment again:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+### Windows Command Prompt
+
+```bat
+python -m venv .venv
+.venv\Scripts\activate.bat
+pip install -r requirements.txt
+```
+
+### macOS or Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+---
+
+## Environment Configuration
+
+Copy the example configuration:
+
+### Windows
+
+```powershell
+copy .env.example .env
+```
+
+### macOS or Linux
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and configure the required values.
+
+### LLM configuration
+
+```dotenv
+LLM_PROVIDER=groq
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=openai/gpt-oss-120b
+```
+
+If the configured model is unavailable, check the current Groq model list and update `GROQ_MODEL`.
+
+Optional Gemini configuration:
+
+```dotenv
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-2.0-flash
+```
+
+### General configuration
+
+```dotenv
+EMERGENCY_NUMBER=112
+MAX_QUESTIONS=15
+LLM_TIMEOUT_S=12
+DASHBOARD_PIN=
+TRIAGE_DB=triageguide.db
+```
+
+### Supabase configuration
+
+The FastAPI backend and the Streamlit login both require:
+
+```dotenv
+SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+SUPABASE_SECRET_KEY=your_server_only_secret_key
+
+SUPABASE_JWT_ISSUER=https://YOUR_PROJECT_ID.supabase.co/auth/v1
+SUPABASE_JWKS_URL=https://YOUR_PROJECT_ID.supabase.co/auth/v1/.well-known/jwks.json
+
+API_URL=http://127.0.0.1:8000
+ALLOWED_ORIGINS=http://localhost:8501
+```
+
+Never commit `.env` to source control.
+
+Never expose `SUPABASE_SECRET_KEY` or any server-only secret in frontend code.
+
+---
+
+## Running the Application
+
+The Streamlit app talks to the FastAPI backend, so start the backend first
+(see [Running the FastAPI Backend](#running-the-fastapi-backend)).
+
+### Streamlit application
+
+Start the Streamlit application in a second terminal:
+
+```powershell
+streamlit run app.py
+```
+
+Open:
+
+```text
+http://localhost:8501
+```
+
+Log in, or create a patient account. Clinician, reviewer, and admin roles are
+assigned in Supabase and see the clinician dashboard instead of the patient page.
+
+### Patient page
+
+The patient can:
+
+1. Start a new assessment.
+2. Describe symptoms in free text.
+3. Answer follow-up questions while the progress indicator updates.
+4. Review the urgency result and the reasons behind it.
+5. View the suggested care pathway.
+6. Download a summary for a doctor.
+7. Note the anonymous patient code.
+8. Delete stored data.
+
+### Clinician dashboard
+
+The clinician dashboard shows urgency counts and a session table. After a
+session is selected, it is organized into tabs:
+
+| Tab | Contents |
+|---|---|
+| Overview | Structured summary, symptom timeline, continuity note, PDF download |
+| Explainability | Confidence, reasons, clinician-review flag, session state |
+| Trace | Decision trace and LLM latency |
+| Workflow | LangGraph diagram with the executed path highlighted |
+| Feedback | Clinician assessment form and patient data deletion |
+
+In the workflow diagram, green nodes were executed, the red node marks emergency
+escalation, and dashed grey nodes were not reached.
+
+The optional dashboard PIN is only a local demonstration feature. It is not a replacement for proper authentication.
+
+---
+
+## Running the FastAPI Backend
+
+The FastAPI backend uses Supabase authentication and persistence.
+
+Start the backend:
+
+```powershell
+uvicorn api.main:app --reload
+```
+
+For a specific host and port:
+
+```powershell
+uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Available documentation:
+
+```text
+http://127.0.0.1:8000/docs
+http://127.0.0.1:8000/redoc
+```
+
+Health check:
+
+```powershell
+curl http://127.0.0.1:8000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+The backend supports:
+
+- JWT authentication
+- Patient assessment creation
+- Patient messages
+- Patient assessment retrieval
+- Patient data deletion
+- Clinician session listing
+- Clinician session details (including the workflow diagram)
+- Clinician summaries
+- PDF report downloads
+- Clinician feedback
+- Rate limiting
+- Audit logging
+
+---
+
+## Supabase Setup
+
+1. Create a Supabase project.
+2. Open the Supabase SQL editor.
+3. Run:
+
+```text
+supabase/migrations/001_initial_schema.sql
+```
+
+The migration creates:
+
+- User profiles
+- Patient records
+- Assessment sessions
+- Messages
+- Symptom events
+- Audit logs
+- Clinician feedback
+- Role-based helper functions
+- Row-level security policies
+- Indexes
+- User profile creation trigger
+
+### Supported roles
+
+| Role | Description |
+|---|---|
+| `patient` | Can create and view their own assessments |
+| `clinician` | Can review patient sessions |
+| `reviewer` | Can review patient sessions |
+| `admin` | Can manage administrative data and roles |
+
+### Supabase authentication
+
+The API expects a valid Supabase access token:
+
+```http
+Authorization: Bearer <access-token>
+```
+
+The API validates:
+
+- Token signature
+- Expiration
+- Issuer
+- Audience
+- Subject
+- Authentication role
+- Supabase profile role
+
+---
+
+## Command-Line Tools
+
+### Deterministic fallback chat
+
+This mode does not require an LLM:
+
+```powershell
+python scripts/cli_fallback.py
+```
+
+Example input:
+
+```text
+I have had fever for three days
+```
+
+### Agent without an LLM
+
+```powershell
+python scripts/chat_cli.py --no-llm --trace
+```
+
+The `--trace` option displays tool calls and workflow information.
+
+### Agent with an LLM
+
+```powershell
+python scripts/chat_cli.py --trace
+```
+
+### Engine demonstration
+
+```powershell
+python scripts/demo_engine.py
+```
+
+### Memory demonstration
+
+```powershell
+python scripts/demo_memory.py
+```
+
+This uses a temporary demonstration database and shows:
+
+- Anonymous patient code generation
+- Session persistence
+- Continuity notes
+- Symptom timelines
+
+### LLM connectivity check
+
+```powershell
+python scripts/test_llm.py
+```
+
+### Extractor test
+
+```powershell
+python scripts/test_extractor.py
+```
+
+### Adversarial test
+
+```powershell
+python scripts/test_adversarial.py
+```
+
+The adversarial test checks cases such as:
+
+- Prompt injection
+- Requests for diagnosis
+- Requests for medication
+- Missing information
+- Hinglish input
+- Child-related scenarios
+- Unsafe or ambiguous wording
+
+---
+
+## Testing
+
+Run the complete test suite:
+
+```powershell
+python -m pytest -q
+```
+
+The test suite covers:
+
+- API security
+- Authentication and authorization
+- Red-flag detection
+- Triage rules
+- Condition evaluation
+- Answer parsing
+- Knowledge-base validation
+- Memory and timelines
+- Agent orchestration
+- Extractor behavior
+- Output guardrails
+- Safety review
+- Clinician summaries
+- Streamlit application behavior
+
+Run a specific test file:
+
+```powershell
+python -m pytest tests/test_red_flags.py -q
+```
+
+Run tests matching a keyword:
+
+```powershell
+python -m pytest -k "red_flag" -q
+```
+
+Validate the knowledge base:
+
+```powershell
+python scripts/check_knowledge.py
+```
+
+---
+
+## Evaluation
+
+### Development vignette evaluation
+
+Run the development vignettes:
+
+```powershell
+python eval/run_vignettes.py
+```
+
+These vignettes are useful as smoke tests, but they are not independent validation because they were created alongside the rules.
+
+### Offline held-out evaluation
+
+Run the rule-based evaluation:
+
+```powershell
+python eval/run_eval.py
+```
+
+The command evaluates:
+
+- Main rule-based system
+- Component ablations
+- Baseline approaches
+- Per-group performance
+- Failure cases
+
+Results are written under:
+
+```text
+eval/results/
+```
+
+### Live evaluation
+
+Run the live extraction and review evaluation:
+
+```powershell
+python eval/run_eval.py --live --extraction --tag live1
+```
+
+For a smaller test:
+
+```powershell
+python eval/run_eval.py --live --extraction --limit 10 --tag smoke
+```
+
+The live evaluation requires a working LLM configuration and may incur provider rate limits.
+
+### Clinician review sheet
+
+Generate or use the review sheet:
+
+```text
+eval/review_sheet.csv
+```
+
+After a qualified reviewer completes the sheet:
+
+```powershell
+python eval/run_eval.py `
+  --reviewed eval/review_sheet_filled.csv `
+  --tag clinician
+```
+
+Do not alter held-out cases after their checksum has been recorded.
+
+---
+
+## Knowledge Base
+
+The knowledge base is stored as JSON and CSV files.
+
+### Protocols
+
+Complaint-specific protocols are stored in:
+
+```text
+knowledge/protocols/
+```
+
+Protocols include:
+
+- Abdominal pain
+- Chest pain
+- Cough and breathing problems
+- Dizziness and weakness
+- Fever
+- Gastrointestinal upset
+- Headache
+- Minor injury
+- Other complaints
+- Sore throat and ear symptoms
+- Urinary symptoms
+
+### Shared knowledge files
+
+```text
+knowledge/common.json
+knowledge/modifiers.json
+knowledge/pathways.json
+knowledge/red_flags.json
+knowledge/synonyms.json
+knowledge/symptom_vocab.csv
+```
+
+### Vocabulary generation
+
+The vocabulary can be rebuilt with:
+
+```powershell
+python data/prepare_vocab.py
+```
+
+Optional raw data files are:
+
+```text
+data/raw/Symptom-severity.csv
+data/raw/dataset.csv
+```
+
+The vocabulary-generation script also writes:
+
+```text
+data/dataset_report.txt
+```
+
+Always validate changes:
+
+```powershell
+python scripts/check_knowledge.py
+```
+
+---
+
+## Safety Design
+
+TriageGuide uses multiple safety layers.
+
+### 1. Deterministic red-flag gate
+
+Patient text is checked for emergency indicators before the system makes an LLM call.
+
+This protects the system from missing urgent information when:
+
+- The model is unavailable
+- The model returns invalid JSON
+- The model misunderstands the message
+- The network is unavailable
+
+### 2. Fact validation
+
+The LLM proposes structured facts, but Python validates:
+
+- Data types
+- Allowed values
+- Numeric ranges
+- Quoted denials
+- Known field names
+- Required structure
+
+Invalid or unsupported facts are rejected.
+
+### 3. Deterministic urgency calculation
+
+The urgency engine uses the validated patient state and knowledge-base rules.
+
+The model does not directly assign the final urgency.
+
+### 4. Escalation-only safety review
+
+The optional AI safety review can raise urgency, but it cannot lower an existing urgency level.
+
+It also cannot raise a normal case directly to emergency unless the deterministic emergency gate supports it.
+
+### 5. Output guard
+
+Generated questions and review text are checked for:
+
+- Diagnosis wording
+- Medication recommendations
+- Unsafe treatment claims
+- Prompt-injection output
+- Unsupported medical conclusions
+
+Unsafe generated content is replaced with fixed fallback text.
+
+### 6. Refusal handling
+
+Requests such as:
+
+```text
+What disease do I have?
+Which tablet should I take?
+```
+
+receive fixed refusal responses instead of unconstrained model output.
+
+### 7. LLM failure fallback
+
+When an LLM call fails, the system continues with deterministic behavior where possible.
+
+After repeated failures, the circuit breaker temporarily stops additional model calls.
+
+### 8. Clinician summary safety
+
+Clinician summaries are generated from validated state and stored records rather than unrestricted model-generated text.
+
+Patient-provided content is escaped before it is included in summaries.
+
+---
+
+## Data Storage and Privacy
+
+### Local mode
+
+Local demonstrations and command-line tools use SQLite.
+
+By default, data is stored in:
+
+```text
+triageguide.db
+```
+
+The location can be changed with:
+
+```dotenv
+TRIAGE_DB=C:\path\to\triageguide.db
+```
+
+Local databases should not be committed to Git.
+
+### Supabase mode
+
+The API uses Supabase for:
+
+- Authentication
+- Patient profiles
+- Sessions
+- Messages
+- Symptom events
+- Audit logs
+- Clinician feedback
+
+### Privacy characteristics
+
+The application uses anonymous patient codes for continuity. It is designed not to require a patient's name or phone number.
+
+However, this project is still a prototype. Do not enter real patient information.
+
+A production deployment would require:
+
+- Formal privacy review
+- Data retention rules
+- Encryption
+- Secure backups
+- Access monitoring
+- Audit review
+- Incident response
+- Regulatory assessment
+- Clinical governance
+
+---
+
+## API Overview
+
+### Health
+
+```http
+GET /health
+```
+
+### Current user
+
+```http
+GET /auth/me
+Authorization: Bearer <access-token>
+```
+
+### Create a patient assessment
+
+```http
+POST /patient/assessments
+Authorization: Bearer <patient-token>
+```
+
+### Submit a patient message
+
+```http
+POST /patient/assessments/{session_id}/messages
+Authorization: Bearer <patient-token>
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "text": "I have had a fever for three days"
+}
+```
+
+### Retrieve an assessment
+
+```http
+GET /patient/assessments/{session_id}
+Authorization: Bearer <patient-token>
+```
+
+### Retrieve assessment messages
+
+```http
+GET /patient/assessments/{session_id}/messages
+Authorization: Bearer <patient-token>
+```
+
+### Download a patient summary
+
+```http
+GET /patient/assessments/{session_id}/download
+Authorization: Bearer <patient-token>
+```
+
+### Delete patient data
+
+```http
+DELETE /patient/me
+Authorization: Bearer <patient-token>
+```
+
+### List clinician sessions
+
+```http
+GET /clinician/sessions
+Authorization: Bearer <clinician-token>
+```
+
+### Retrieve clinician session details
+
+```http
+GET /clinician/sessions/{session_id}
+Authorization: Bearer <clinician-token>
+```
+
+The response includes `summary`, `state`, `report`, `workflow`, `timeline`,
+`continuity`, and `feedback`.
+
+### Retrieve clinician summary
+
+```http
+GET /clinician/sessions/{session_id}/summary
+Authorization: Bearer <clinician-token>
+```
+
+### Download a clinician PDF
+
+```http
+GET /clinician/sessions/{session_id}/pdf
+Authorization: Bearer <clinician-token>
+```
+
+### Submit clinician feedback
+
+```http
+POST /clinician/sessions/{session_id}/feedback
+Authorization: Bearer <clinician-token>
+Content-Type: application/json
+```
+
+Example request:
+
+```json
+{
+  "outcome": "incorrect_urgency",
+  "comment": "The patient should be reviewed sooner."
+}
+```
+
+### Delete a patient as a clinician
+
+```http
+DELETE /clinician/patients/{patient_code}
+Authorization: Bearer <clinician-token>
+```
+
+---
+
+## Troubleshooting
+
+### Python is not recognized
+
+Install Python 3.11 or newer and enable the option to add Python to PATH.
+
+Verify:
+
+```powershell
+python --version
+```
+
+### Virtual environment will not activate
+
+Run:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+Then activate again:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+### LLM model not found
+
+Check the current provider model list and update:
+
+```dotenv
+GROQ_MODEL=your_current_model_id
+```
+
+### LLM requests fail
+
+Check:
+
+- `GROQ_API_KEY`
+- Internet connectivity
+- Provider availability
+- Model name
+- Network or VPN restrictions
+- Provider rate limits
+
+The deterministic mode can still be used:
+
+```powershell
+python scripts/chat_cli.py --no-llm --trace
+```
+
+### API fails during startup
+
+The FastAPI API requires all Supabase authentication variables:
+
+```dotenv
+SUPABASE_URL
+SUPABASE_SECRET_KEY
+SUPABASE_JWT_ISSUER
+SUPABASE_JWKS_URL
+```
+
+Confirm that the Supabase migration has been applied.
+
+### Streamlit cannot connect to the API
+
+Confirm that the API is running:
+
+```powershell
+uvicorn api.main:app --reload
+```
+
+Then verify:
+
+```powershell
+curl http://127.0.0.1:8000/health
+```
+
+Check that `API_URL` matches the backend address.
+
+### Session expired message
+
+The Streamlit app logs you out when the API returns `401`. Log in again to get a
+fresh token.
+
+### Workflow diagram is blank or shows an error
+
+The diagram is rendered in the browser with Mermaid loaded from a CDN, so the
+browser needs internet access. Open the browser console for the exact error. If
+the diagram renders but nothing is highlighted, confirm that
+`GET /clinician/sessions/{session_id}` builds the diagram with
+`workflow_diagram(report)` and that `report` contains `tool_log`.
+
+### Streamlit warns about `use_container_width` or `width="stretch"`
+
+These parameters changed between Streamlit versions. Use whichever style your
+installed version supports, and use it consistently across `app.py`.
+
+### Knowledge validation fails
+
+Run:
+
+```powershell
+python scripts/check_knowledge.py
+```
+
+Review the reported JSON file, field name, or protocol rule.
+
+---
+
+## Limitations
+
+- This system is not clinically validated.
+- It must not be used to make real medical decisions.
+- The system does not diagnose conditions.
+- The system does not prescribe medication.
+- The knowledge base is educational and may contain incomplete rules.
+- Development vignettes are not independent validation data.
+- Held-out labels may not have been verified by clinicians.
+- LLM output can be incorrect or unavailable.
+- Provider models and APIs may change.
+- The optional Gemini provider is not fully tested.
+- The dashboard PIN is not real authentication.
+- The patient progress indicator is an estimate based on the number of answers, not the real workflow stage.
+- Logging out clears the local Streamlit session only; the Supabase token stays valid until it expires.
+- Local SQLite storage is not suitable for production deployment.
+- Closing a browser session may interrupt an unfinished live conversation.
+- Emergency numbers and care guidance must be verified before deployment in any region.
+
+---
+
+## Development Guidelines
+
+Before opening a pull request:
+
+1. Run the test suite:
+
+   ```powershell
+   python -m pytest -q
+   ```
+
+2. Validate the knowledge base:
+
+   ```powershell
+   python scripts/check_knowledge.py
+   ```
+
+3. Keep safety-critical decisions deterministic.
+4. Add focused tests for new behavior.
+5. Do not commit `.env`, API keys, database files, or credentials.
+6. Update this README when commands or configuration change.
+7. Review changes to `knowledge/` carefully.
+8. Document the source of any clinical rule added to a protocol.
+9. Run the adversarial checks when changing prompts or guardrails.
+10. Do not claim clinical accuracy based only on development-vignette agreement.
+11. When adding or renaming a LangGraph node, update `TOOL_TO_NODE` and the diagram in `agent/workflow_visualization.py`.
+
+---
+
+## License and Attribution
+
+TriageGuide is intended for educational and research use.
+
+Review the repository license and the licenses of all third-party dependencies before redistribution.
+
+The project uses public datasets and external model providers where configured. Follow the terms of each dataset, API, and dependency.
