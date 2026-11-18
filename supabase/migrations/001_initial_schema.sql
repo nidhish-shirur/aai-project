@@ -77,6 +77,21 @@ create table public.audit_logs (
   created_at timestamptz not null default now()
 );
 
+create table public.clinician_feedback (
+    id bigint generated always as identity primary key,
+    session_id uuid not null references public.sessions(id) on delete cascade,
+    clinician_user_id uuid not null references auth.users(id) on delete cascade,
+    outcome text not null check (
+        outcome in ('correct', 'needs_review', 'incorrect_urgency')
+    ),
+    corrected_urgency text check (
+        corrected_urgency in ('low', 'moderate', 'urgent', 'emergency')
+    ),
+    comment text,
+    created_at timestamptz not null default now(),
+    unique (session_id, clinician_user_id)
+);
+
 create index sessions_patient_idx
   on public.sessions(patient_id, created_at desc);
 
@@ -91,6 +106,9 @@ create index symptom_events_patient_idx
 
 create index audit_logs_actor_idx
   on public.audit_logs(actor_user_id, created_at desc);
+
+create index clinician_feedback_session_idx
+on public.clinician_feedback(session_id);
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -186,6 +204,7 @@ alter table public.sessions enable row level security;
 alter table public.messages enable row level security;
 alter table public.symptom_events enable row level security;
 alter table public.audit_logs enable row level security;
+alter table public.clinician_feedback enable row level security;
 
 create policy profiles_self_read
 on public.profiles
@@ -380,3 +399,37 @@ to authenticated
 with check (
   actor_user_id = auth.uid()
 );
+
+create policy clinician_feedback_insert
+on public.clinician_feedback
+for insert
+to authenticated
+with check (
+    clinician_user_id = auth.uid()
+    and exists (
+        select 1
+        from public.user_profiles
+        where id = auth.uid()
+          and role in ('clinician', 'reviewer', 'admin')
+    )
+);
+
+create policy clinician_feedback_read
+on public.clinician_feedback
+for select
+to authenticated
+using (
+    exists (
+        select 1
+        from public.user_profiles
+        where id = auth.uid()
+          and role in ('clinician', 'reviewer', 'admin')
+    )
+);
+
+create policy clinician_feedback_update
+on public.clinician_feedback
+for update
+to authenticated
+using (clinician_user_id = auth.uid())
+with check (clinician_user_id = auth.uid());

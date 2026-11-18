@@ -1,15 +1,15 @@
 from __future__ import annotations
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import (PlainTextResponse, Response) 
 import os
 from typing import Any
-
-from fastapi import Depends, FastAPI, HTTPException, Request
+from api.pdf_report import build_clinician_pdf
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-
+from agent.workflow_visualization import workflow_diagram
 from api.rate_limit import enforce_rate_limit
 import config
 from agent.llm_client import get_llm
-from agent.orchestrator import TriageAgent
+from agent.langgraph_workflow import LangGraphTriageAgent
 from agent.summary import build_clinician_summary
 from api.auth import supabase_admin
 from api.dependencies import (
@@ -17,8 +17,15 @@ from api.dependencies import (
     require_clinician,
     require_patient,
 )
-from api.schemas import MessageRequest
+from api.schemas import (
+    MessageRequest,
+    ClinicianFeedbackRequest,
+)
 from memory.supabase_repository import SupabaseRepository
+from agent.workflow_visualization import (
+    WORKFLOW_MERMAID,
+    executed_nodes,
+)
 
 
 app = FastAPI(title="TriageGuide API")
@@ -41,21 +48,23 @@ app.add_middleware(
 repository = SupabaseRepository(supabase_admin)
 
 
-def create_agent() -> TriageAgent:
+def create_agent() -> LangGraphTriageAgent:
     use_llm = (
-        os.getenv("API_USE_LLM", "false").lower() == "true"
+        os.getenv("API_USE_LLM", "false").lower()
+        == "true"
     )
 
     llm = get_llm() if use_llm else None
 
-    return TriageAgent(
+    return LangGraphTriageAgent(
         repository,
         llm=llm,
+        safety_review=True,
     )
 
 
 def runtime_from_agent(
-    agent: TriageAgent,
+    agent: LangGraphTriageAgent,
 ) -> dict[str, Any]:
     return {
         "done": agent.done,
@@ -73,7 +82,7 @@ def runtime_from_agent(
 
 def agent_from_session(
     session_id: str,
-) -> TriageAgent:
+) -> LangGraphTriageAgent:
     agent = create_agent()
 
     state = repository.load_state(session_id)
@@ -335,6 +344,10 @@ def get_session(
         "report": report,
         "summary": summary,
         "timeline": timeline,
+        "workflow": {
+            "diagram": workflow_diagram(report),
+            "executed_nodes": executed_nodes(report),
+        },
     }
 
 
@@ -389,7 +402,7 @@ def get_patient_messages(
 def download_patient_report(
     session_id: str,
     user: dict[str, Any] = Depends(require_patient),
-) -> PlainTextResponse:
+) -> Response:
     if not repository.session_belongs_to_user(
         session_id,
         user["user_id"],
@@ -515,4 +528,124 @@ def get_session_summary(
             if report
             else {}
         ),
+    }
+
+@app.get(
+    "/clinician/sessions/{session_id}/pdf",
+)
+def download_clinician_pdf(
+    session_id: str,
+    user: dict[str, Any] = Depends(require_clinician),
+) -> PlainTextResponse:
+    try:
+        state = repository.load_state(session_id)
+        report = repository.get_report(session_id)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail="Session not found",
+        ) from exc
+
+    if report is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Assessment is not complete",
+        )
+
+    timeline = repository.timeline_text(
+        state.patient_id,
+    )
+
+    continuity = repository.continuity_note(
+        state.patient_id,
+        exclude_session_id=session_id,
+    )
+
+    summary = build_clinician_summary(
+        state,
+        report,
+        timeline,
+        continuity,
+    )
+
+    pdf_bytes = build_clinician_pdf(
+        summary,
+        report,
+        timeline,
+    )
+
+    repository.audit(
+        action="clinician_pdf_downloaded",
+        entity_type="session",
+        entity_id=session_id,
+        actor_user_id=user["user_id"],
+    )
+
+    from fastapi.responses import Response
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="triage-{session_id}.pdf"'
+            ),
+        },
+    )
+
+@app.post("/clinician/sessions/{session_id}/feedback")
+def submit_clinician_feedback(
+    session_id: str,
+    request: ClinicianFeedbackRequest,
+    user: dict[str, Any] = Depends(require_clinician),
+) -> dict[str, Any]:
+    if request.outcome == "incorrect_urgency":
+        if request.corrected_urgency is None:
+            raise HTTPException(
+                status_code=422,
+                detail="Corrected urgency is required",
+            )
+
+    try:
+        repository._session(session_id)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=404,
+            detail="Session not found",
+        ) from exc
+
+    feedback = repository.save_clinician_feedback(
+        session_id=session_id,
+        clinician_user_id=user["user_id"],
+        outcome=request.outcome,
+        corrected_urgency=request.corrected_urgency,
+        comment=request.comment,
+    )
+
+    repository.audit(
+        action="clinician_feedback_submitted",
+        entity_type="session",
+        entity_id=session_id,
+        actor_user_id=user["user_id"],
+        metadata={
+            "outcome": request.outcome,
+            "corrected_urgency": request.corrected_urgency,
+        },
+    )
+
+    return {
+        "status": "saved",
+        "feedback": feedback,
+    }
+
+
+@app.get("/clinician/sessions/{session_id}/feedback")
+def get_clinician_feedback(
+    session_id: str,
+    user: dict[str, Any] = Depends(require_clinician),
+) -> dict[str, Any]:
+    return {
+        "feedback": repository.get_clinician_feedback(
+            session_id
+        )
     }

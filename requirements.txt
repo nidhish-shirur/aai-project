@@ -13,3 +13,5 @@ supabase
 PyJWT[crypto]
 httpx
 python-multipart
+langgraph
+fpdf2>=2.7.0

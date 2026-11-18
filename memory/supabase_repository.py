@@ -36,7 +36,7 @@ class SupabaseRepository:
 
     # ------------------------------------------------------------ helpers
 
-        def _patient(self, public_code: str) -> dict[str, Any]:
+    def _patient(self, public_code: str) -> dict[str, Any]:
         response = (
             self.client
             .table("patients")
@@ -97,11 +97,11 @@ class SupabaseRepository:
         )
         return bool(response.data)
 
-        def create_patient(
+    def create_patient(
         self,
         user_id: str,
         now: Optional[datetime] = None,
-    ) -> str:
+        ) -> str:
         existing = self._patient_for_user(user_id)
 
         if existing is not None:
@@ -123,7 +123,7 @@ class SupabaseRepository:
 
         return response.data[0]["public_code"]
 
-        def start_session(
+    def start_session(
         self,
         patient_id: Optional[str] = None,
         now: Optional[datetime] = None,
@@ -771,3 +771,51 @@ class SupabaseRepository:
             "id",
             patient["id"],
         ).execute()
+
+    def save_clinician_feedback(
+        self,
+        session_id: str,
+        clinician_user_id: str,
+        outcome: str,
+        corrected_urgency: str | None = None,
+        comment: str | None = None,
+    ) -> dict[str, Any]:
+        response = (
+            self.client
+            .table("clinician_feedback")
+            .upsert(
+                {
+                    "session_id": session_id,
+                    "clinician_user_id": clinician_user_id,
+                    "outcome": outcome,
+                    "corrected_urgency": corrected_urgency,
+                    "comment": comment,
+                    "created_at": iso(utcnow()),
+                },
+                on_conflict="session_id,clinician_user_id",
+            )
+            .execute()
+        )
+
+        if not response.data:
+            raise RuntimeError("Unable to save clinician feedback")
+
+        return response.data[0]
+
+
+    def get_clinician_feedback(
+        self,
+        session_id: str,
+    ) -> dict[str, Any] | None:
+        response = (
+            self.client
+            .table("clinician_feedback")
+            .select("*")
+            .eq("session_id", session_id)
+            .execute()
+        )
+
+        if not response.data:
+            return None
+
+        return response.data[0]
